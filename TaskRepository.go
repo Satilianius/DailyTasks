@@ -6,12 +6,18 @@ import (
 	"sync"
 )
 
-type TaskRepository struct {
+type MemoryTaskRepository struct {
 	tasks []Task
 	mu    sync.Mutex // For thread safety
 }
 
-func (taskRepository *TaskRepository) AddTask(task Task) error {
+func NewMemoryTaskRepository() *MemoryTaskRepository {
+	return &MemoryTaskRepository{
+		tasks: []Task{},
+	}
+}
+
+func (taskRepository *MemoryTaskRepository) Add(task Task) error {
 	taskRepository.mu.Lock()
 	defer taskRepository.mu.Unlock()
 
@@ -25,7 +31,7 @@ func (taskRepository *TaskRepository) AddTask(task Task) error {
 	return nil
 }
 
-func (taskRepository *TaskRepository) GetById(uuid uuid.UUID) (*Task, error) {
+func (taskRepository *MemoryTaskRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
 	taskRepository.mu.Lock()
 	defer taskRepository.mu.Unlock()
 
@@ -38,7 +44,7 @@ func (taskRepository *TaskRepository) GetById(uuid uuid.UUID) (*Task, error) {
 	return nil, errors.New("task not found")
 }
 
-func (taskRepository *TaskRepository) Update(updatedTask Task) error {
+func (taskRepository *MemoryTaskRepository) Update(updatedTask Task) error {
 	taskRepository.mu.Lock()
 	defer taskRepository.mu.Unlock()
 
@@ -52,7 +58,7 @@ func (taskRepository *TaskRepository) Update(updatedTask Task) error {
 	return errors.New("task not found")
 }
 
-func (taskRepository *TaskRepository) GetAll() ([]Task, error) {
+func (taskRepository *MemoryTaskRepository) GetAll() ([]Task, error) {
 	taskRepository.mu.Lock()
 	defer taskRepository.mu.Unlock()
 
@@ -61,7 +67,7 @@ func (taskRepository *TaskRepository) GetAll() ([]Task, error) {
 	return tasksCopy, nil
 }
 
-func (taskRepository *TaskRepository) RemoveTask(uuid uuid.UUID) error {
+func (taskRepository *MemoryTaskRepository) Remove(uuid uuid.UUID) error {
 	taskRepository.mu.Lock()
 	defer taskRepository.mu.Unlock()
 

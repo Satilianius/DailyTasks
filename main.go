@@ -5,10 +5,10 @@ import (
 )
 
 func main() {
-	taskRepository := new(TaskRepository)
-	var task = NewTask("testTask")
+	var taskRepository TaskRepository = NewMemoryTaskRepository()
+	task := NewTask("testTask")
 
-	err := taskRepository.AddTask(task)
+	err := taskRepository.Add(task)
 	if err != nil {
 		fmt.Println(err)
 		return
