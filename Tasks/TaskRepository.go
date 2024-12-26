@@ -1,4 +1,4 @@
-package main
+package Tasks
 
 import "github.com/google/uuid"
 

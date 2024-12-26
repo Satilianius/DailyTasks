@@ -1,12 +1,13 @@
 package main
 
 import (
+	"DailyTasks/Tasks"
 	"fmt"
 )
 
 func main() {
-	var taskRepository TaskRepository = NewMemoryTaskRepository()
-	task := NewTask("testTask")
+	var taskRepository Tasks.TaskRepository = Tasks.NewMemoryTaskRepository()
+	task := Tasks.NewTask("testTask")
 
 	err := taskRepository.Add(task)
 	if err != nil {
