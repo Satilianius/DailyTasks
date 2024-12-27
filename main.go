@@ -68,10 +68,15 @@ func printHeader() {
 	fmt.Println("")
 }
 
-func getThisWeek() []time.Time {
+func getThisWeek() [7]time.Time {
 	today := today()
-	// TODO add other week days
-	return []time.Time{today}
+	thisWeek := [7]time.Time{}
+	for weekdayIndex := 0; weekdayIndex < 7; weekdayIndex++ {
+		daysToAdd := weekdayIndex - int(today.Weekday())
+		thisWeek[weekdayIndex] = today.AddDate(0, 0, daysToAdd)
+	}
+
+	return thisWeek
 }
 
 func today() time.Time {
