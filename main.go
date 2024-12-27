@@ -69,10 +69,12 @@ func printHeader() {
 }
 
 func getThisWeek() [7]time.Time {
-	today := today()
+	today := today().AddDate(0, 0, 2)
 	thisWeek := [7]time.Time{}
 	for weekdayIndex := 0; weekdayIndex < 7; weekdayIndex++ {
-		daysToAdd := weekdayIndex - int(today.Weekday())
+		// Adjust Weekday to make Monday 0 (0 is Sunday by default)
+		adjustedWeekday := (int(today.Weekday()) + 6) % 7
+		daysToAdd := weekdayIndex - adjustedWeekday
 		thisWeek[weekdayIndex] = today.AddDate(0, 0, daysToAdd)
 	}
 
