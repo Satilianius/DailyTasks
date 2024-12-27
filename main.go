@@ -17,7 +17,8 @@ func main() {
 		return
 	}
 
-	printHeader()
+	dates := getThisWeek()
+	printHeader(dates[:])
 
 	tasks, err := taskRepository.GetAll()
 	if err != nil {
@@ -31,7 +32,11 @@ func main() {
 			fmt.Printf("Error while getting progress for task %s:\n\n%v", task.Uuid, err)
 			return
 		}
-		fmt.Printf("%15s: %s\n", task.Name, printableProgress.GetPrintableProgressAtDate(today()))
+		fmt.Printf("%15s:", task.Name)
+		for _, date := range dates {
+			fmt.Printf("%11s", printableProgress.GetPrintableProgressAtDate(date))
+		}
+		fmt.Println()
 	}
 }
 
@@ -59,9 +64,9 @@ func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Pr
 	return nil
 }
 
-func printHeader() {
+func printHeader(dates []time.Time) {
 	fmt.Printf("%15s:", "Tasks/Dates")
-	var dates = getThisWeek()
+
 	for _, date := range dates {
 		fmt.Printf("%11s", date.Format("02/01/2006"))
 	}
@@ -69,8 +74,8 @@ func printHeader() {
 }
 
 func getThisWeek() [7]time.Time {
-	today := today().AddDate(0, 0, 2)
-	thisWeek := [7]time.Time{}
+	today := today()
+	var thisWeek [7]time.Time
 	for weekdayIndex := 0; weekdayIndex < 7; weekdayIndex++ {
 		// Adjust Weekday to make Monday 0 (0 is Sunday by default)
 		adjustedWeekday := (int(today.Weekday()) + 6) % 7
