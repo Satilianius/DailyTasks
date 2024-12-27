@@ -9,40 +9,21 @@ import (
 
 func main() {
 	taskRepository := Tasks.TaskRepository(Tasks.NewMemoryTaskRepository())
-	testTask1 := Tasks.NewTask("testTask1")
-	testTask2 := Tasks.NewTask("testTask2")
-
-	err := taskRepository.Add(testTask1)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	err = taskRepository.Add(testTask2)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
 	progressRepository := Progress.Repository(Progress.NewMemoryRepository())
-	err = progressRepository.AddBooleanTask(testTask1)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	err = progressRepository.AddNumberTask(testTask2)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 
-	tasks, err := taskRepository.GetAll()
+	err := fillRepositories(taskRepository, progressRepository)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	printHeader()
+
+	tasks, err := taskRepository.GetAll()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	for _, task := range tasks {
 		printableProgress, err := progressRepository.GetByUuid(task.Uuid)
@@ -52,6 +33,30 @@ func main() {
 		}
 		fmt.Printf("%15s: %s\n", task.Name, printableProgress.GetPrintableProgressAtDate(today()))
 	}
+}
+
+func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Progress.Repository) error {
+	booleanTask := Tasks.NewTask("booleanTask")
+	numberTask := Tasks.NewTask("numberTask")
+
+	err := taskRepository.Add(booleanTask)
+	if err != nil {
+		return err
+	}
+	err = taskRepository.Add(numberTask)
+	if err != nil {
+		return err
+	}
+
+	err = progressRepository.AddBooleanTask(booleanTask)
+	if err != nil {
+		return err
+	}
+	err = progressRepository.AddNumberTask(numberTask)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func printHeader() {
