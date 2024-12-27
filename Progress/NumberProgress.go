@@ -1,13 +1,11 @@
 package Progress
 
 import (
-	"DailyTasks/Tasks"
 	"fmt"
 	"time"
 )
 
 type NumberProgress struct {
-	task         Tasks.Task
 	DatesToValue map[time.Time]float64
 }
 

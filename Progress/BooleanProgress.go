@@ -1,18 +1,17 @@
 package Progress
 
 import (
-	"DailyTasks/Tasks"
+	"fmt"
 	"time"
 )
 
 type BooleanProgress struct {
-	task             Tasks.Task
-	utcDatesWhenDone map[time.Time]struct{}
+	DatesToValue map[time.Time]bool
 }
 
 func (b BooleanProgress) GetPrintableProgressAtDate(utcDate time.Time) string {
-	if _, done := b.utcDatesWhenDone[utcDate]; done {
-		return "true"
+	if value, exists := b.DatesToValue[utcDate]; exists {
+		return fmt.Sprintf("%t", value)
 	}
 	return "false"
 }
