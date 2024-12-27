@@ -7,6 +7,7 @@ import (
 )
 
 type MemoryTaskRepository struct {
+	// TODO use map?
 	tasks []Task
 	mu    sync.Mutex // For thread safety
 }
@@ -23,7 +24,7 @@ func (r *MemoryTaskRepository) Add(task Task) error {
 
 	// Check if the item with the same ID already exists
 	for _, existingItem := range r.tasks {
-		if existingItem.uuid == task.uuid {
+		if existingItem.Uuid == task.Uuid {
 			return errors.New("task with this ID already exists")
 		}
 	}
@@ -36,7 +37,7 @@ func (r *MemoryTaskRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
 	defer r.mu.Unlock()
 
 	for _, task := range r.tasks {
-		if task.uuid == uuid {
+		if task.Uuid == uuid {
 			return &task, nil
 		}
 	}
@@ -49,7 +50,7 @@ func (r *MemoryTaskRepository) Update(updatedTask Task) error {
 	defer r.mu.Unlock()
 
 	for i, task := range r.tasks {
-		if task.uuid == updatedTask.uuid {
+		if task.Uuid == updatedTask.Uuid {
 			r.tasks[i] = updatedTask
 			return nil
 		}
@@ -72,7 +73,7 @@ func (r *MemoryTaskRepository) Remove(uuid uuid.UUID) error {
 	defer r.mu.Unlock()
 
 	for i, task := range r.tasks {
-		if task.uuid == uuid {
+		if task.Uuid == uuid {
 			r.tasks = append(r.tasks[:i], r.tasks[i+1:]...)
 			return nil
 		}

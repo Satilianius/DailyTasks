@@ -6,14 +6,14 @@ import (
 )
 
 type Task struct {
-	uuid uuid.UUID
-	name string
+	Uuid uuid.UUID
+	Name string
 }
 
 func NewTask(name string) Task {
-	return Task{uuid: uuid.New(), name: name}
+	return Task{Uuid: uuid.New(), Name: name}
 }
 
 func (t Task) String() string {
-	return fmt.Sprintf("uuid=%s, Name=%s", t.uuid, t.name)
+	return fmt.Sprintf("uuid=%s, Name=%s", t.Uuid, t.Name)
 }
