@@ -9,70 +9,104 @@ import (
 )
 
 type MemoryRepository struct {
-	booleanTaskProgress map[uuid.UUID]BooleanProgress
-	numberTaskProgress  map[uuid.UUID]NumberProgress
-	// TODO mutex per map?
-	mu sync.Mutex // For thread safety
+	booleanTaskProgress map[uuid.UUID]*BooleanProgress
+	numberTaskProgress  map[uuid.UUID]*NumberProgress
+
+	booleanMutex sync.RWMutex // For thread safety
+	numberMutex  sync.RWMutex // For thread safety
 }
 
 func NewMemoryRepository() *MemoryRepository {
 	return &MemoryRepository{
-		booleanTaskProgress: make(map[uuid.UUID]BooleanProgress),
-		numberTaskProgress:  make(map[uuid.UUID]NumberProgress),
+		booleanTaskProgress: make(map[uuid.UUID]*BooleanProgress),
+		numberTaskProgress:  make(map[uuid.UUID]*NumberProgress),
 	}
 }
 
 func (r *MemoryRepository) AddBooleanTask(task Tasks.Task) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.booleanMutex.Lock()
+	defer r.booleanMutex.Unlock()
 
-	r.booleanTaskProgress[task.Uuid] = BooleanProgress{}
+	r.booleanTaskProgress[task.Uuid] = &BooleanProgress{}
 	return nil
 }
 
 func (r *MemoryRepository) AddNumberTask(task Tasks.Task) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.numberMutex.Lock()
+	defer r.numberMutex.Unlock()
 
-	r.numberTaskProgress[task.Uuid] = NumberProgress{}
+	r.numberTaskProgress[task.Uuid] = &NumberProgress{}
 	return nil
 }
 
-func (r *MemoryRepository) GetByUuid(taskUuid uuid.UUID) (PrintableProgress, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	// TODO handle missing key
-	// TODO should caller know the task type? Here and in delete
-	if progress, exists := r.booleanTaskProgress[taskUuid]; exists {
-		return progress, nil
+func (r *MemoryRepository) GetPrintableProgressByUuid(taskUuid uuid.UUID) (PrintableProgress, error) {
+	booleanProgress, err, found := r.GetBooleanByUuid(taskUuid)
+	if found {
+		return *booleanProgress, err
 	}
-	if progress, exists := r.numberTaskProgress[taskUuid]; exists {
-		return progress, nil
+
+	numberProgress, err, found := r.getNumberByUuid(taskUuid)
+	if found {
+		return numberProgress, err
 	}
+
 	return nil, errors.New("progress not found")
 }
 
+func (r *MemoryRepository) GetBooleanByUuid(taskUuid uuid.UUID) (*BooleanProgress, error, bool) {
+	r.booleanMutex.RLock()
+	defer r.booleanMutex.RUnlock()
+
+	if progress, exists := r.booleanTaskProgress[taskUuid]; exists {
+		return progress, nil, true
+	}
+	return nil, nil, false
+}
+
+func (r *MemoryRepository) getNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, error, bool) {
+	r.numberMutex.RLock()
+	defer r.numberMutex.RUnlock()
+
+	if progress, exists := r.numberTaskProgress[taskUuid]; exists {
+		return progress, nil, true
+	}
+
+	return nil, nil, false
+}
+
 func (r *MemoryRepository) UpdateBooleanProgress(taskUuid uuid.UUID, date time.Time, done bool) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.booleanMutex.Lock()
+	defer r.booleanMutex.Unlock()
 
 	r.booleanTaskProgress[taskUuid].DatesToValue[date] = done
 	return nil
 }
 
 func (r *MemoryRepository) UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.numberMutex.Lock()
+	defer r.numberMutex.Unlock()
 
 	r.numberTaskProgress[taskUuid].DatesToValue[date] = value
 	return nil
 }
 
 func (r *MemoryRepository) Remove(taskUuid uuid.UUID) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.RemoveBoolean(taskUuid)
+	r.RemoveNumber(taskUuid)
+
+	return nil
+}
+
+func (r *MemoryRepository) RemoveBoolean(taskUuid uuid.UUID) {
+	r.booleanMutex.Lock()
+	defer r.booleanMutex.Unlock()
 
 	delete(r.booleanTaskProgress, taskUuid)
+}
+
+func (r *MemoryRepository) RemoveNumber(taskUuid uuid.UUID) {
+	r.numberMutex.Lock()
+	defer r.numberMutex.Unlock()
+
 	delete(r.numberTaskProgress, taskUuid)
-	return nil
 }

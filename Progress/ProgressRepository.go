@@ -9,8 +9,9 @@ import (
 type Repository interface {
 	AddBooleanTask(task Tasks.Task) error
 	AddNumberTask(task Tasks.Task) error
-	GetByUuid(taskUuid uuid.UUID) (PrintableProgress, error)
-	// TODO check task type?
+	GetPrintableProgressByUuid(taskUuid uuid.UUID) (PrintableProgress, error)
+	GetBooleanByUuid(taskUuid uuid.UUID) (*BooleanProgress, error, bool)
+	getNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, error, bool)
 	UpdateBooleanProgress(taskUuid uuid.UUID, date time.Time, done bool) error
 	UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error
 	Remove(taskUuid uuid.UUID) error
