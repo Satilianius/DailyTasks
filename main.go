@@ -17,24 +17,33 @@ func main() {
 		return
 	}
 
-	dates := getThisWeek()
-	printHeader(dates[:])
-
 	tasks, err := taskRepository.GetAll()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	tasksWithProgress := make(map[Tasks.Task]Progress.PrintableProgress)
 	for _, task := range tasks {
-		printableProgress, err := progressRepository.GetByUuid(task.Uuid)
+		printableProgress, err := progressRepository.GetPrintableProgressByUuid(task.Uuid)
 		if err != nil {
 			fmt.Printf("Error while getting progress for task %s:\n\n%v", task.Uuid, err)
 			return
 		}
+		tasksWithProgress[task] = printableProgress
+	}
+
+	printProgress(tasksWithProgress)
+}
+
+func printProgress(tasksWithProgress map[Tasks.Task]Progress.PrintableProgress) {
+	dates := getThisWeek()
+	printHeader(dates[:])
+
+	for task, progress := range tasksWithProgress {
 		fmt.Printf("%15s:", task.Name)
 		for _, date := range dates {
-			fmt.Printf("%11s", printableProgress.GetPrintableProgressAtDate(date))
+			fmt.Printf("%11s", progress.GetPrintableProgressAtDate(date))
 		}
 		fmt.Println()
 	}
