@@ -78,17 +78,23 @@ func (r *MemoryRepository) getNumberByUuid(taskUuid uuid.UUID) (*NumberProgress,
 func (r *MemoryRepository) UpdateBooleanProgress(taskUuid uuid.UUID, date time.Time, done bool) error {
 	r.booleanMutex.Lock()
 	defer r.booleanMutex.Unlock()
-	// TODO what if not found
-	r.booleanTaskProgress[taskUuid].DatesToValue[date] = done
-	return nil
+
+	if progress, exists := r.booleanTaskProgress[taskUuid]; exists {
+		progress.DatesToValue[date] = done
+		return nil
+	}
+	return errors.New("progress not found")
 }
 
 func (r *MemoryRepository) UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error {
 	r.numberMutex.Lock()
 	defer r.numberMutex.Unlock()
-	// TODO what if not found
-	r.numberTaskProgress[taskUuid].DatesToValue[date] = value
-	return nil
+
+	if progress, exists := r.numberTaskProgress[taskUuid]; exists {
+		progress.DatesToValue[date] = value
+		return nil
+	}
+	return errors.New("progress not found")
 }
 
 func (r *MemoryRepository) Remove(taskUuid uuid.UUID) error {

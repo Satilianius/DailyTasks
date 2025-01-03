@@ -9,7 +9,7 @@ import (
 
 func main() {
 	taskRepository := Tasks.TaskRepository(Tasks.NewMemoryTaskRepository())
-	progressRepository := Progress.Repository(Progress.NewConcurrentMemoryRepository())
+	progressRepository := Progress.Repository(Progress.NewMemoryRepository())
 
 	err := fillRepositories(taskRepository, progressRepository)
 	if err != nil {
