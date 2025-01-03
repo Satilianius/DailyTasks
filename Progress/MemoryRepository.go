@@ -27,7 +27,7 @@ func (r *MemoryRepository) AddBooleanTask(task Tasks.Task) error {
 	r.booleanMutex.Lock()
 	defer r.booleanMutex.Unlock()
 
-	r.booleanTaskProgress[task.Uuid] = &BooleanProgress{}
+	r.booleanTaskProgress[task.Uuid] = NewBooleanProgress()
 	return nil
 }
 
@@ -35,17 +35,17 @@ func (r *MemoryRepository) AddNumberTask(task Tasks.Task) error {
 	r.numberMutex.Lock()
 	defer r.numberMutex.Unlock()
 
-	r.numberTaskProgress[task.Uuid] = &NumberProgress{}
+	r.numberTaskProgress[task.Uuid] = NewNumberProgress()
 	return nil
 }
 
 func (r *MemoryRepository) GetPrintableProgressByUuid(taskUuid uuid.UUID) (PrintableProgress, error) {
-	booleanProgress, err, found := r.GetBooleanByUuid(taskUuid)
+	booleanProgress, found, err := r.GetBooleanByUuid(taskUuid)
 	if found {
-		return *booleanProgress, err
+		return booleanProgress, err
 	}
 
-	numberProgress, err, found := r.getNumberByUuid(taskUuid)
+	numberProgress, found, err := r.getNumberByUuid(taskUuid)
 	if found {
 		return numberProgress, err
 	}
@@ -53,31 +53,32 @@ func (r *MemoryRepository) GetPrintableProgressByUuid(taskUuid uuid.UUID) (Print
 	return nil, errors.New("progress not found")
 }
 
-func (r *MemoryRepository) GetBooleanByUuid(taskUuid uuid.UUID) (*BooleanProgress, error, bool) {
+func (r *MemoryRepository) GetBooleanByUuid(taskUuid uuid.UUID) (*BooleanProgress, bool, error) {
 	r.booleanMutex.RLock()
 	defer r.booleanMutex.RUnlock()
 
 	if progress, exists := r.booleanTaskProgress[taskUuid]; exists {
-		return progress, nil, true
+		return progress, true, nil
 	}
-	return nil, nil, false
+
+	return nil, false, nil
 }
 
-func (r *MemoryRepository) getNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, error, bool) {
+func (r *MemoryRepository) getNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, bool, error) {
 	r.numberMutex.RLock()
 	defer r.numberMutex.RUnlock()
 
 	if progress, exists := r.numberTaskProgress[taskUuid]; exists {
-		return progress, nil, true
+		return progress, true, nil
 	}
 
-	return nil, nil, false
+	return nil, false, nil
 }
 
 func (r *MemoryRepository) UpdateBooleanProgress(taskUuid uuid.UUID, date time.Time, done bool) error {
 	r.booleanMutex.Lock()
 	defer r.booleanMutex.Unlock()
-
+	// TODO what if not found
 	r.booleanTaskProgress[taskUuid].DatesToValue[date] = done
 	return nil
 }
@@ -85,7 +86,7 @@ func (r *MemoryRepository) UpdateBooleanProgress(taskUuid uuid.UUID, date time.T
 func (r *MemoryRepository) UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error {
 	r.numberMutex.Lock()
 	defer r.numberMutex.Unlock()
-
+	// TODO what if not found
 	r.numberTaskProgress[taskUuid].DatesToValue[date] = value
 	return nil
 }
