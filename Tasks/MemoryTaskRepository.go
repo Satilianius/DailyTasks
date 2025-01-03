@@ -9,7 +9,7 @@ import (
 type MemoryTaskRepository struct {
 	// TODO use map?
 	tasks []Task
-	mu    sync.Mutex // For thread safety
+	mu    sync.RWMutex
 }
 
 func NewMemoryTaskRepository() *MemoryTaskRepository {
@@ -33,8 +33,8 @@ func (r *MemoryTaskRepository) Add(task Task) error {
 }
 
 func (r *MemoryTaskRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
 	for _, task := range r.tasks {
 		if task.Uuid == uuid {
@@ -60,8 +60,8 @@ func (r *MemoryTaskRepository) Update(updatedTask Task) error {
 }
 
 func (r *MemoryTaskRepository) GetAll() ([]Task, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
 	tasksCopy := make([]Task, len(r.tasks))
 	copy(tasksCopy, r.tasks)
