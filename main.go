@@ -9,7 +9,7 @@ import (
 
 func main() {
 	taskRepository := Tasks.TaskRepository(Tasks.NewMemoryTaskRepository())
-	progressRepository := Progress.Repository(Progress.NewMemoryRepository())
+	progressRepository := Progress.Repository(Progress.NewConcurrentMemoryRepository())
 
 	err := fillRepositories(taskRepository, progressRepository)
 	if err != nil {
@@ -70,6 +70,16 @@ func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Pr
 	if err != nil {
 		return err
 	}
+
+	err = progressRepository.UpdateBooleanProgress(booleanTask.Uuid, today(), true)
+	if err != nil {
+		return err
+	}
+	err = progressRepository.UpdateNumberProgress(numberTask.Uuid, today(), 42)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -96,5 +106,9 @@ func getThisWeek() [7]time.Time {
 }
 
 func today() time.Time {
-	return time.Now().Truncate(24 * time.Hour)
+	return getStartOfDay(time.Now())
+}
+
+func getStartOfDay(day time.Time) time.Time {
+	return day.Truncate(24 * time.Hour)
 }
