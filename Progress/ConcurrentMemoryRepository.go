@@ -61,23 +61,22 @@ func (r *ConcurrentMemoryRepository) getNumberByUuid(taskUuid uuid.UUID) (*Numbe
 }
 
 func (r *ConcurrentMemoryRepository) UpdateBooleanProgress(taskUuid uuid.UUID, date time.Time, done bool) error {
-	// TODO lock?
 	booleanProgress, exist := r.booleanTaskProgress.Load(taskUuid)
 	if !exist {
 		return errors.New("progress not found")
 	}
-
-	booleanProgress.(*BooleanProgress).DatesToValue[date] = done
+	// TODO progress can be deleted by another thread here. lock manually?
+	booleanProgress.(*BooleanProgress).Update(date, done)
 	return nil
 }
 
 func (r *ConcurrentMemoryRepository) UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error {
-	// TODO lock?
 	numberProgress, exist := r.numberTaskProgress.Load(taskUuid)
 	if !exist {
 		return errors.New("progress not found")
 	}
-	numberProgress.(*NumberProgress).DatesToValue[date] = value
+	// TODO progress can be deleted by another thread here. lock manually?
+	numberProgress.(*NumberProgress).Update(date, value)
 	return nil
 }
 

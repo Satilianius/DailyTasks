@@ -80,7 +80,7 @@ func (r *MemoryRepository) UpdateBooleanProgress(taskUuid uuid.UUID, date time.T
 	defer r.booleanMutex.Unlock()
 
 	if progress, exists := r.booleanTaskProgress[taskUuid]; exists {
-		progress.DatesToValue[date] = done
+		progress.Update(date, done)
 		return nil
 	}
 	return errors.New("progress not found")
@@ -91,7 +91,7 @@ func (r *MemoryRepository) UpdateNumberProgress(taskUuid uuid.UUID, date time.Ti
 	defer r.numberMutex.Unlock()
 
 	if progress, exists := r.numberTaskProgress[taskUuid]; exists {
-		progress.DatesToValue[date] = value
+		progress.Update(date, value)
 		return nil
 	}
 	return errors.New("progress not found")
