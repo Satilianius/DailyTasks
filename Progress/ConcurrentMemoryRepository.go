@@ -36,7 +36,7 @@ func (r *ConcurrentMemoryRepository) GetPrintableProgressByUuid(taskUuid uuid.UU
 		return booleanProgress, err
 	}
 
-	numberProgress, found, err := r.getNumberByUuid(taskUuid)
+	numberProgress, found, err := r.GetNumberByUuid(taskUuid)
 	if found {
 		return numberProgress, err
 	}
@@ -52,7 +52,7 @@ func (r *ConcurrentMemoryRepository) GetBooleanByUuid(taskUuid uuid.UUID) (*Bool
 	return nil, false, nil
 }
 
-func (r *ConcurrentMemoryRepository) getNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, bool, error) {
+func (r *ConcurrentMemoryRepository) GetNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, bool, error) {
 	if progress, exists := r.numberTaskProgress.Load(taskUuid); exists {
 		return progress.(*NumberProgress), true, nil
 	}
