@@ -6,8 +6,9 @@ import (
 )
 
 type Task struct {
-	Uuid uuid.UUID
-	Name string
+	taskType TaskType
+	Uuid     uuid.UUID
+	Name     string
 }
 
 func NewTask(name string) Task {
@@ -15,5 +16,26 @@ func NewTask(name string) Task {
 }
 
 func (t Task) String() string {
-	return fmt.Sprintf("uuid=%s, Name=%s", t.Uuid, t.Name)
+	return fmt.Sprintf("%s uuid=%s, Name=%s", t.taskType, t.Uuid, t.Name)
 }
+
+type TaskType int
+
+func (t TaskType) String() string {
+	switch t {
+	case BooleanTask:
+		return "BooleanTask"
+	case NumberTask:
+		return "NumberTask"
+	case DurationTask:
+		return "DurationTask"
+	default:
+		return "UnknownTask"
+	}
+}
+
+const (
+	BooleanTask TaskType = iota
+	NumberTask
+	DurationTask
+)
