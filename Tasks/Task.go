@@ -6,17 +6,17 @@ import (
 )
 
 type Task struct {
-	taskType TaskType
+	TaskType TaskType
 	Uuid     uuid.UUID
 	Name     string
 }
 
-func NewTask(name string) Task {
-	return Task{Uuid: uuid.New(), Name: name}
+func NewTask(taskType TaskType, name string) Task {
+	return Task{TaskType: taskType, Uuid: uuid.New(), Name: name}
 }
 
 func (t Task) String() string {
-	return fmt.Sprintf("%s uuid=%s, Name=%s", t.taskType, t.Uuid, t.Name)
+	return fmt.Sprintf("%s uuid=%s, Name=%s", t.TaskType, t.Uuid, t.Name)
 }
 
 type TaskType int

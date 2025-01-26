@@ -25,27 +25,19 @@ func NewMemoryRepository() *MemoryRepository {
 	}
 }
 
-func (r *MemoryRepository) AddBooleanTask(task Tasks.Task) error {
+func (r *MemoryRepository) AddTask(task Tasks.Task) error {
 	r.booleanMutex.Lock()
 	defer r.booleanMutex.Unlock()
 
-	r.booleanTaskProgress[task.Uuid] = NewBooleanProgress()
-	return nil
-}
+	switch task.TaskType {
+	case Tasks.BooleanTask:
+		r.booleanTaskProgress[task.Uuid] = NewBooleanProgress()
+	case Tasks.NumberTask:
+		r.numberTaskProgress[task.Uuid] = NewNumberProgress()
+	case Tasks.DurationTask:
+		r.durationTaskProgress[task.Uuid] = NewDurationProgress()
+	}
 
-func (r *MemoryRepository) AddNumberTask(task Tasks.Task) error {
-	r.numberMutex.Lock()
-	defer r.numberMutex.Unlock()
-
-	r.numberTaskProgress[task.Uuid] = NewNumberProgress()
-	return nil
-}
-
-func (r *MemoryRepository) AddDurationTask(task Tasks.Task) error {
-	r.durationMutex.Lock()
-	defer r.durationMutex.Unlock()
-
-	r.durationTaskProgress[task.Uuid] = NewDurationProgress()
 	return nil
 }
 

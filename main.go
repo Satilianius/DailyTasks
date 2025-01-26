@@ -50,8 +50,8 @@ func printProgress(tasksWithProgress map[Tasks.Task]Progress.PrintableProgress) 
 }
 
 func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Progress.Repository) error {
-	booleanTask := Tasks.NewTask("booleanTask")
-	numberTask := Tasks.NewTask("numberTask")
+	booleanTask := Tasks.NewTask(Tasks.BooleanTask, "booleanTask")
+	numberTask := Tasks.NewTask(Tasks.NumberTask, "numberTask")
 
 	err := taskRepository.Add(booleanTask)
 	if err != nil {
@@ -62,11 +62,11 @@ func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Pr
 		return err
 	}
 
-	err = progressRepository.AddBooleanTask(booleanTask)
+	err = progressRepository.AddTask(booleanTask)
 	if err != nil {
 		return err
 	}
-	err = progressRepository.AddNumberTask(numberTask)
+	err = progressRepository.AddTask(numberTask)
 	if err != nil {
 		return err
 	}

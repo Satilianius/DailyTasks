@@ -7,11 +7,7 @@ import (
 )
 
 type Repository interface {
-	// TODO add task type to task?
-	AddBooleanTask(task Tasks.Task) error
-	AddNumberTask(task Tasks.Task) error
-	AddDurationTask(task Tasks.Task) error
-
+	AddTask(task Tasks.Task) error
 	GetPrintableProgressByUuid(taskUuid uuid.UUID) (PrintableProgress, error)
 
 	GetBooleanByUuid(taskUuid uuid.UUID) (*BooleanProgress, bool, error)
