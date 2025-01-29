@@ -8,11 +8,9 @@ import (
 
 type Repository interface {
 	AddTask(task Tasks.Task) error
-	GetPrintableProgressByUuid(taskUuid uuid.UUID) (PrintableProgress, error)
 
-	GetBooleanByUuid(taskUuid uuid.UUID) (*BooleanProgress, bool, error)
-	GetNumberByUuid(taskUuid uuid.UUID) (*NumberProgress, bool, error)
-	GetDurationByUuid(taskUuid uuid.UUID) (*DurationProgress, bool, error)
+	GetAllProgress(taskUuid uuid.UUID) (PrintableProgress, bool, error)
+	GetProgressBetweenDates(taskUuid uuid.UUID, from time.Time, to time.Time) (PrintableProgress, bool, error)
 
 	UpdateBooleanProgress(taskUuid uuid.UUID, date time.Time, done bool) error
 	UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error
