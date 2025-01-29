@@ -2,30 +2,22 @@ package Progress
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
 type DurationProgress struct {
 	datesToValue map[time.Time]time.Duration
-	mu           sync.RWMutex
 }
 
-func NewDurationProgress() *DurationProgress {
-	return &DurationProgress{datesToValue: make(map[time.Time]time.Duration)}
-}
-
-func (p *DurationProgress) Update(updateDate time.Time, updateValue time.Duration) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	p.datesToValue[updateDate] = updateValue
+func NewDurationProgress(datesToValue map[time.Time]time.Duration) *DurationProgress {
+	datesToValueCopy := make(map[time.Time]time.Duration, len(datesToValue))
+	for k, v := range datesToValue {
+		datesToValueCopy[k] = v
+	}
+	return &DurationProgress{datesToValue: datesToValueCopy}
 }
 
 func (p *DurationProgress) GetValueAtDate(day time.Time) time.Duration {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-
 	return p.datesToValue[day]
 }
 
