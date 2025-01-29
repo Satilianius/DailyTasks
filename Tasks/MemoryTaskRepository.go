@@ -7,7 +7,6 @@ import (
 )
 
 type MemoryTaskRepository struct {
-	// TODO use map?
 	tasks []Task
 	mu    sync.RWMutex
 }

@@ -25,10 +25,14 @@ func main() {
 
 	tasksWithProgress := make(map[Tasks.Task]Progress.PrintableProgress)
 	for _, task := range tasks {
-		printableProgress, err := progressRepository.GetPrintableProgressByUuid(task.Uuid)
+		printableProgress, found, err := progressRepository.GetAllProgress(task.Uuid)
 		if err != nil {
 			fmt.Printf("Error while getting progress for task %s:\n\n%v", task.Uuid, err)
-			return
+			continue
+		}
+		if !found {
+			fmt.Printf("Progress not found for task %s\n", task.Uuid)
+			continue
 		}
 		tasksWithProgress[task] = printableProgress
 	}
@@ -52,12 +56,17 @@ func printProgress(tasksWithProgress map[Tasks.Task]Progress.PrintableProgress) 
 func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Progress.Repository) error {
 	booleanTask := Tasks.NewTask(Tasks.BooleanTask, "booleanTask")
 	numberTask := Tasks.NewTask(Tasks.NumberTask, "numberTask")
+	durationTask := Tasks.NewTask(Tasks.DurationTask, "durationTask")
 
 	err := taskRepository.Add(booleanTask)
 	if err != nil {
 		return err
 	}
 	err = taskRepository.Add(numberTask)
+	if err != nil {
+		return err
+	}
+	err = taskRepository.Add(durationTask)
 	if err != nil {
 		return err
 	}
@@ -70,12 +79,20 @@ func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Pr
 	if err != nil {
 		return err
 	}
+	err = progressRepository.AddTask(durationTask)
+	if err != nil {
+		return err
+	}
 
 	err = progressRepository.UpdateBooleanProgress(booleanTask.Uuid, today(), true)
 	if err != nil {
 		return err
 	}
 	err = progressRepository.UpdateNumberProgress(numberTask.Uuid, today(), 42)
+	if err != nil {
+		return err
+	}
+	err = progressRepository.UpdateDurationProgress(durationTask.Uuid, today(), time.Minute)
 	if err != nil {
 		return err
 	}
