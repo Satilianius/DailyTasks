@@ -61,25 +61,6 @@ func (r *MemoryRepository) GetAllProgress(taskUuid uuid.UUID) (PrintableProgress
 	return nil, false, fmt.Errorf("progress for task %s not found", taskUuid)
 }
 
-func (r *MemoryRepository) GetProgressBetweenDates(taskUuid uuid.UUID, from time.Time, to time.Time) (PrintableProgress, bool, error) {
-	booleanProgress, found, err := r.GetBooleanProgressBetweenDates(taskUuid, from, to)
-	if found {
-		return booleanProgress, true, err
-	}
-
-	numberProgress, found, err := r.GetNumberProgressBetweenDates(taskUuid, from, to)
-	if found {
-		return numberProgress, true, err
-	}
-
-	durationProgress, found, err := r.GetDurationProgressBetweenDates(taskUuid, from, to)
-	if found {
-		return durationProgress, true, err
-	}
-
-	return nil, false, fmt.Errorf("progress for task %s not found", taskUuid)
-}
-
 func (r *MemoryRepository) GetBooleanProgressAll(taskUuid uuid.UUID) (*BooleanProgress, bool, error) {
 	r.booleanMutex.RLock()
 	defer r.booleanMutex.RUnlock()
@@ -110,6 +91,25 @@ func (r *MemoryRepository) GetDurationProgressAll(taskUuid uuid.UUID) (*Duration
 		return NewDurationProgress(progress), true, nil
 	}
 	return nil, false, nil
+}
+
+func (r *MemoryRepository) GetProgressBetweenDates(taskUuid uuid.UUID, from time.Time, to time.Time) (PrintableProgress, bool, error) {
+	booleanProgress, found, err := r.GetBooleanProgressBetweenDates(taskUuid, from, to)
+	if found {
+		return booleanProgress, true, err
+	}
+
+	numberProgress, found, err := r.GetNumberProgressBetweenDates(taskUuid, from, to)
+	if found {
+		return numberProgress, true, err
+	}
+
+	durationProgress, found, err := r.GetDurationProgressBetweenDates(taskUuid, from, to)
+	if found {
+		return durationProgress, true, err
+	}
+
+	return nil, false, fmt.Errorf("progress for task %s not found", taskUuid)
 }
 
 func (r *MemoryRepository) GetBooleanProgressBetweenDates(taskUuid uuid.UUID, from time.Time, to time.Time) (*BooleanProgress, bool, error) {
@@ -202,7 +202,7 @@ func (r *MemoryRepository) UpdateDurationProgress(taskUuid uuid.UUID, date time.
 	return fmt.Errorf("progress for duration task %s not found", taskUuid)
 }
 
-func (r *MemoryRepository) Remove(taskUuid uuid.UUID) error {
+func (r *MemoryRepository) RemoveTaskAndProgress(taskUuid uuid.UUID) error {
 	r.RemoveBoolean(taskUuid)
 	r.RemoveNumber(taskUuid)
 	r.RemoveDuration(taskUuid)

@@ -16,5 +16,5 @@ type Repository interface {
 	UpdateNumberProgress(taskUuid uuid.UUID, date time.Time, value float64) error
 	UpdateDurationProgress(taskUuid uuid.UUID, date time.Time, value time.Duration) error
 
-	Remove(taskUuid uuid.UUID) error
+	RemoveTaskAndProgress(taskUuid uuid.UUID) error
 }
