@@ -3,6 +3,7 @@ package Tasks
 import (
 	"errors"
 	"github.com/google/uuid"
+	"slices"
 	"sync"
 )
 
@@ -22,10 +23,12 @@ func (r *MemoryTaskRepository) Add(task Task) error {
 	defer r.mu.Unlock()
 
 	// Check if the item with the same ID already exists
-	for _, existingItem := range r.tasks {
-		if existingItem.Uuid == task.Uuid {
-			return errors.New("task with this ID already exists")
-		}
+	idx := slices.IndexFunc(r.tasks, func(t Task) bool {
+		return t.Uuid == task.Uuid
+	})
+
+	if idx != -1 {
+		return errors.New("task with this ID already exists")
 	}
 	r.tasks = append(r.tasks, task)
 	return nil
@@ -35,48 +38,53 @@ func (r *MemoryTaskRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	for _, task := range r.tasks {
-		if task.Uuid == uuid {
-			return &task, nil
-		}
+	idx := slices.IndexFunc(r.tasks, func(t Task) bool {
+		return t.Uuid == uuid
+	})
+
+	if idx == -1 {
+		return nil, errors.New("task not found")
 	}
 
-	return nil, errors.New("task not found")
+	task := r.tasks[idx]
+	return &task, nil
 }
 
 func (r *MemoryTaskRepository) Update(updatedTask Task) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for i, task := range r.tasks {
-		if task.Uuid == updatedTask.Uuid {
-			r.tasks[i] = updatedTask
-			return nil
-		}
+	idx := slices.IndexFunc(r.tasks, func(t Task) bool {
+		return t.Uuid == updatedTask.Uuid
+	})
+
+	if idx == -1 {
+		return errors.New("task not found")
 	}
 
-	return errors.New("task not found")
+	r.tasks[idx] = updatedTask
+	return nil
 }
 
 func (r *MemoryTaskRepository) GetAll() ([]Task, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	tasksCopy := make([]Task, len(r.tasks))
-	copy(tasksCopy, r.tasks)
-	return tasksCopy, nil
+	return slices.Clone(r.tasks), nil
 }
 
 func (r *MemoryTaskRepository) Remove(uuid uuid.UUID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for i, task := range r.tasks {
-		if task.Uuid == uuid {
-			r.tasks = append(r.tasks[:i], r.tasks[i+1:]...)
-			return nil
-		}
+	idx := slices.IndexFunc(r.tasks, func(t Task) bool {
+		return t.Uuid == uuid
+	})
+
+	if idx == -1 {
+		return nil
 	}
 
+	r.tasks = slices.Delete(r.tasks, idx, idx+1)
 	return nil
 }
