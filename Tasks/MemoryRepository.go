@@ -7,18 +7,18 @@ import (
 	"sync"
 )
 
-type MemoryTaskRepository struct {
+type MemoryRepository struct {
 	tasks []Task
 	mu    sync.RWMutex
 }
 
-func NewMemoryTaskRepository() *MemoryTaskRepository {
-	return &MemoryTaskRepository{
+func NewMemoryRepository() *MemoryRepository {
+	return &MemoryRepository{
 		tasks: []Task{},
 	}
 }
 
-func (r *MemoryTaskRepository) Add(task Task) error {
+func (r *MemoryRepository) Add(task Task) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -34,7 +34,7 @@ func (r *MemoryTaskRepository) Add(task Task) error {
 	return nil
 }
 
-func (r *MemoryTaskRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
+func (r *MemoryRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -50,7 +50,7 @@ func (r *MemoryTaskRepository) GetByUuid(uuid uuid.UUID) (*Task, error) {
 	return &task, nil
 }
 
-func (r *MemoryTaskRepository) Update(updatedTask Task) error {
+func (r *MemoryRepository) Update(updatedTask Task) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -66,14 +66,14 @@ func (r *MemoryTaskRepository) Update(updatedTask Task) error {
 	return nil
 }
 
-func (r *MemoryTaskRepository) GetAll() ([]Task, error) {
+func (r *MemoryRepository) GetAll() ([]Task, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	return slices.Clone(r.tasks), nil
 }
 
-func (r *MemoryTaskRepository) Remove(uuid uuid.UUID) error {
+func (r *MemoryRepository) Remove(uuid uuid.UUID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

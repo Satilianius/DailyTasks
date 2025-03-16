@@ -3,12 +3,74 @@ package main
 import (
 	"DailyTasks/Progress"
 	"DailyTasks/Tasks"
+	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"net"
+	"os"
 	"time"
 )
 
 func main() {
-	taskRepository := Tasks.TaskRepository(Tasks.NewMemoryTaskRepository())
+	testRelationalRepositories()
+}
+
+func testRelationalRepositories() {
+	// Get connection details from environment variables
+	host := getEnv("DB_HOST", "database")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "myuser")
+	password := getEnv("DB_PASSWORD", "mypassword")
+	dbname := getEnv("DB_NAME", "mydb")
+
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		user, password, host, port, dbname)
+
+	fmt.Printf("Connection string: %s\n", connString)
+
+	// Test if we can resolve the hostname
+	fmt.Printf("Attempting to resolve host: %s\n", host)
+	ips, err := net.LookupHost(host)
+	if err != nil {
+		fmt.Printf("Failed to resolve host: %v\n", err)
+	} else {
+		fmt.Printf("Host resolves to: %v\n", ips)
+	}
+
+	// Try to connect with timeout context
+	fmt.Printf("Attempting to connect to database...\n")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Connect to database
+	conn, err := pgx.Connect(ctx, connString)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
+	fmt.Println("Successfully connected to PostgreSQL")
+
+	// Test query to verify connection
+	var version string
+	err = conn.QueryRow(context.Background(), "SELECT version()").Scan(&version)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Println("PostgreSQL version:", version)
+}
+
+func getEnv(key, fallback string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return fallback
+}
+
+func testInMemoryRepositories() {
+	taskRepository := Tasks.Repository(Tasks.NewMemoryRepository())
 	progressRepository := Progress.Repository(Progress.NewMemoryRepository())
 
 	err := fillRepositories(taskRepository, progressRepository)
@@ -53,7 +115,7 @@ func printProgress(tasksWithProgress map[Tasks.Task]Progress.PrintableProgress) 
 	}
 }
 
-func fillRepositories(taskRepository Tasks.TaskRepository, progressRepository Progress.Repository) error {
+func fillRepositories(taskRepository Tasks.Repository, progressRepository Progress.Repository) error {
 	booleanTask := Tasks.NewTask(Tasks.BooleanTask, "booleanTask")
 	numberTask := Tasks.NewTask(Tasks.NumberTask, "numberTask")
 	durationTask := Tasks.NewTask(Tasks.DurationTask, "durationTask")
