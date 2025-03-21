@@ -3,9 +3,11 @@ package main
 import (
 	"DailyTasks/Progress"
 	"DailyTasks/Tasks"
+	"DailyTasks/config"
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"log"
 	"net"
 	"os"
 	"time"
@@ -16,21 +18,24 @@ func main() {
 }
 
 func testRelationalRepositories() {
-	// Get connection details from environment variables
-	host := getEnv("DB_HOST", "database")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "myuser")
-	password := getEnv("DB_PASSWORD", "mypassword")
-	dbname := getEnv("DB_NAME", "mydb")
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 
+	// Get connection details from environment variables
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		user, password, host, port, dbname)
+		cfg.Db.User,
+		cfg.Db.Password,
+		cfg.Db.Host,
+		cfg.Db.Port,
+		cfg.Db.Name)
 
 	fmt.Printf("Connection string: %s\n", connString)
 
 	// Test if we can resolve the hostname
-	fmt.Printf("Attempting to resolve host: %s\n", host)
-	ips, err := net.LookupHost(host)
+	fmt.Printf("Attempting to resolve host: %s\n", cfg.Db.Host)
+	ips, err := net.LookupHost(cfg.Db.Host)
 	if err != nil {
 		fmt.Printf("Failed to resolve host: %v\n", err)
 	} else {
@@ -51,22 +56,6 @@ func testRelationalRepositories() {
 	defer conn.Close(context.Background())
 
 	fmt.Println("Successfully connected to PostgreSQL")
-
-	// Test query to verify connection
-	var version string
-	err = conn.QueryRow(context.Background(), "SELECT version()").Scan(&version)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Println("PostgreSQL version:", version)
-}
-
-func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return fallback
 }
 
 func testInMemoryRepositories() {

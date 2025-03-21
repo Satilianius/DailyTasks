@@ -1,0 +1,8 @@
+server:
+  port: 8080
+db:
+  host: if_you_see_this_set_database_host
+  port: 5432
+  user: if_you_see_this_set_database_user
+  password: if_you_see_this_set_database_password
+  name: DailyTasks

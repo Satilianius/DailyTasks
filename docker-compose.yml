@@ -7,11 +7,8 @@ services:
     depends_on:
       - database
     environment:
+      GO_ENV: dev
       DB_HOST: database
-      DB_PORT: 5432
-      DB_USER: myuser
-      DB_PASSWORD: mypassword
-      DB_NAME: mydb
     ports:
       - "8080:8080"
 
@@ -19,9 +16,9 @@ services:
     image: postgres:17
     container_name: DailyTasksDB
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_USER: Developer
+      POSTGRES_PASSWORD: Development
+      POSTGRES_DB: DailyTasks
     ports:
       - "5432:5432"
     volumes:
