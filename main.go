@@ -1,6 +1,7 @@
 package main
 
 import (
+	"DailyTasks/Database"
 	"DailyTasks/Progress"
 	"DailyTasks/Tasks"
 	"DailyTasks/config"
@@ -14,15 +15,15 @@ import (
 )
 
 func main() {
-	testRelationalRepositories()
-}
-
-func testRelationalRepositories() {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
+	Database.InitDb(cfg)
+}
+
+func testRelationalRepositories(cfg config.Config) {
 	// Get connection details from environment variables
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		cfg.Db.User,
