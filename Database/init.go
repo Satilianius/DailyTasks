@@ -14,19 +14,7 @@ import (
 )
 
 func InitDb(cfg *config.Config) {
-	// Get connection details from environment variables
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		cfg.Db.User,
-		cfg.Db.Password,
-		cfg.Db.Host,
-		cfg.Db.Port,
-		cfg.Db.Name)
-
-	// Connect to the database
-	db, err := sql.Open("postgres", connString)
-	if err != nil {
-		log.Fatalf("Could not connect to database: %v", err)
-	}
+	db, err := getDbConnection(cfg)
 	defer db.Close()
 
 	// Create a new migration instance
@@ -51,4 +39,21 @@ func InitDb(cfg *config.Config) {
 	}
 
 	fmt.Println("Migrations completed successfully!")
+}
+
+func getDbConnection(cfg *config.Config) (*sql.DB, error) {
+	// Get connection details from environment variables
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		cfg.Db.User,
+		cfg.Db.Password,
+		cfg.Db.Host,
+		cfg.Db.Port,
+		cfg.Db.Name)
+
+	// Connect to the Database
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		log.Fatalf("Could not connect to Database: %v", err)
+	}
+	return db, err
 }

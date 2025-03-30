@@ -68,14 +68,14 @@ func testInMemoryRepositories() {
 		return
 	}
 
-	tasks, err := taskRepository.GetAll()
+	allTasks, err := taskRepository.GetAll()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	tasksWithProgress := make(map[Tasks.Task]Progress.PrintableProgress)
-	for _, task := range tasks {
+	for _, task := range allTasks {
 		printableProgress, found, err := progressRepository.GetAllProgress(task.Uuid)
 		if err != nil {
 			fmt.Printf("Error while getting progress for task %s:\n\n%v", task.Uuid, err)

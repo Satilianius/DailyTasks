@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users
     archived   BOOLEAN                  DEFAULT FALSE
 );
 
--- Create Tasks table
+-- Create tasks table
 CREATE TABLE IF NOT EXISTS tasks
 (
     task_uuid   UUID PRIMARY KEY         DEFAULT gen_random_uuid(),
