@@ -6,12 +6,17 @@ import (
 	"DailyTasks/Tasks"
 	"DailyTasks/config"
 	"context"
+	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"log"
-	"net"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -20,43 +25,114 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	Database.InitDb(cfg)
+	db, err := Database.NewConnection(cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("Error closing database connection: %v", err)
+		} else {
+			log.Println("Database connection closed.")
+		}
+	}()
+
+	// TODO Create repositories
+	// TODO Create Services
+	// TODO Create Handlers
+
+	r := createRouter()
+	srv := createServer(cfg, r)
+
+	stopChan, errChan := createShutdownChannels()
+
+	// Start the server in a goroutine
+	go func() {
+		log.Printf("Server starting on %s", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			errChan <- fmt.Errorf("failed to start server: %w", err)
+		}
+	}()
+
+	waitForSignals(errChan, stopChan, srv)
 }
 
-func testRelationalRepositories(cfg config.Config) {
-	// Get connection details from environment variables
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		cfg.Db.User,
-		cfg.Db.Password,
-		cfg.Db.Host,
-		cfg.Db.Port,
-		cfg.Db.Name)
+func createRouter() *chi.Mux {
+	r := chi.NewRouter()
+	setupMiddleware(r)
+	defineRoutes(r)
+	return r
+}
 
-	fmt.Printf("Connection string: %s\n", connString)
+func setupMiddleware(r *chi.Mux) {
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)                    // Consider structured logging
+	r.Use(middleware.Recoverer)                 // Recover from panics
+	r.Use(middleware.Timeout(60 * time.Second)) // Set request timeout
 
-	// Test if we can resolve the hostname
-	fmt.Printf("Attempting to resolve host: %s\n", cfg.Db.Host)
-	ips, err := net.LookupHost(cfg.Db.Host)
-	if err != nil {
-		fmt.Printf("Failed to resolve host: %v\n", err)
-	} else {
-		fmt.Printf("Host resolves to: %v\n", ips)
+	// TODO: Add CORS middleware if your React app is on a different domain/port
+	// e.g., using github.com/go-chi/cors
+	// corsMiddleware := cors.New(cors.Options{ ... })
+	// r.Use(corsMiddleware.Handler)
+}
+
+func defineRoutes(r *chi.Mux) {
+	// Example using a placeholder function from internal/api package:
+	// api.RegisterRoutes(r, userHandler) // Pass the router and necessary handlers
+
+	// Placeholder route
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintln(w, "Server is running!")
+		if err != nil {
+			log.Printf("Failed to write response: %v", err)
+			return
+		}
+	})
+}
+
+func createServer(cfg *config.Config, r *chi.Mux) *http.Server {
+	serverAddr := fmt.Sprintf(":%d", cfg.Server.Port)
+
+	srv := &http.Server{
+		Addr:         serverAddr,
+		Handler:      r,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
+	return srv
+}
 
-	// Try to connect with timeout context
-	fmt.Printf("Attempting to connect to database...\n")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func createShutdownChannels() (chan os.Signal, chan error) {
+	// Channel to listen for interrupt or terminate signals
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Connect to database
-	conn, err := pgx.Connect(ctx, connString)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+	// Channel to listen for server errors
+	errChan := make(chan error, 1)
+	return stopChan, errChan
+}
+
+func waitForSignals(errChan chan error, stopChan chan os.Signal, srv *http.Server) {
+	select {
+	case err := <-errChan:
+		log.Fatalf("Server error: %v", err)
+	case sig := <-stopChan:
+		log.Printf("Received signal: %v. Shutting down gracefully...", sig)
+
+		// Create a context with a timeout for shutdown
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		// Attempt graceful shutdown
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatalf("Server shutdown failed: %v", err)
+		} else {
+			log.Println("Server stopped gracefully.")
+		}
 	}
-	defer conn.Close(context.Background())
-
-	fmt.Println("Successfully connected to PostgreSQL")
 }
 
 func testInMemoryRepositories() {
@@ -90,19 +166,6 @@ func testInMemoryRepositories() {
 	}
 
 	printProgress(tasksWithProgress)
-}
-
-func printProgress(tasksWithProgress map[Tasks.Task]Progress.PrintableProgress) {
-	dates := getThisWeek()
-	printHeader(dates[:])
-
-	for task, progress := range tasksWithProgress {
-		fmt.Printf("%15s:", task.Name)
-		for _, date := range dates {
-			fmt.Printf("%11s", progress.GetPrintableProgressAtDate(date))
-		}
-		fmt.Println()
-	}
 }
 
 func fillRepositories(taskRepository Tasks.Repository, progressRepository Progress.Repository) error {
@@ -150,34 +213,4 @@ func fillRepositories(taskRepository Tasks.Repository, progressRepository Progre
 	}
 
 	return nil
-}
-
-func printHeader(dates []time.Time) {
-	fmt.Printf("%15s:", "Tasks/Dates")
-
-	for _, date := range dates {
-		fmt.Printf("%11s", date.Format("02/01/2006"))
-	}
-	fmt.Println("")
-}
-
-func getThisWeek() [7]time.Time {
-	today := today()
-	var thisWeek [7]time.Time
-	for weekdayIndex := 0; weekdayIndex < 7; weekdayIndex++ {
-		// Adjust Weekday to make Monday 0 (0 is Sunday by default)
-		adjustedWeekday := (int(today.Weekday()) + 6) % 7
-		daysToAdd := weekdayIndex - adjustedWeekday
-		thisWeek[weekdayIndex] = today.AddDate(0, 0, daysToAdd)
-	}
-
-	return thisWeek
-}
-
-func today() time.Time {
-	return getStartOfDay(time.Now())
-}
-
-func getStartOfDay(day time.Time) time.Time {
-	return day.Truncate(24 * time.Hour)
 }

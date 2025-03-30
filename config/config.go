@@ -2,22 +2,25 @@ package config
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"os"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Db struct {
-		Host     string
-		Port     string
-		User     string
-		Password string
-		Name     string
+		Host                   string
+		Port                   int
+		User                   string
+		Password               string
+		Name                   string
+		SSLMode                string
+		MaxOpenConnections     int
+		MaxIdleConnections     int
+		ConnMaxLifetimeMinutes int
 	}
 	Server struct {
-		Port string
+		Port int
 	}
 }
 

@@ -6,3 +6,7 @@ db:
   user: if_you_see_this_set_database_user
   password: if_you_see_this_set_database_password
   name: DailyTasks
+  SSLMode: prefer
+  MaxOpenConnections: 25
+  MaxIdleConnections: 25
+  ConnMaxLifetimeMinutes: 5

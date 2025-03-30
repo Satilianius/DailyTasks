@@ -6,3 +6,7 @@ db:
   user: Developer
   password: Development
   name: DailyTasks
+  SSLMode: prefer
+  MaxOpenConnections: 25
+  MaxIdleConnections: 25
+  ConnMaxLifetimeMinutes: 5
