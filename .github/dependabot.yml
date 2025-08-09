@@ -1,0 +1,33 @@
+version: 2
+updates:
+  # Go modules (backend)
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 10
+
+  # NPM (frontend in UI folder)
+  - package-ecosystem: "npm"
+    directory: "/UI"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 10
+
+  # Dockerfiles and docker-compose (root)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 10
+
+  # Dockerfiles in UI folder
+  - package-ecosystem: "docker"
+    directory: "/UI"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 10
