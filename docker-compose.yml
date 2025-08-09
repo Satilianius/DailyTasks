@@ -1,9 +1,9 @@
 name: DailyTasks
 
 services:
-  app:
+  backend:
     build: .
-    container_name: DailyTasksMain
+    container_name: DailyTasksBackend
     depends_on:
       - database
     environment:
@@ -23,6 +23,34 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    build: 
+      context: ./UI
+      dockerfile: Dockerfile
+    container_name: DailyTasksFrontend
+    depends_on:
+      - backend
+    ports:
+      - "19000:19000" # Metro (native)
+      - "19001:19001" # Dev tunnels
+      - "19002:19002" # DevTools
+      - "19006:19006" # Web
+      - "8081:8081"   # Metro (used by web for assets/HMR)
+    environment:
+      # Let Expo DevTools bind on all interfaces
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      # Helps the packager craft URLs browser/device can reach from the host
+      # On Windows, host.docker.internal is often safer than localhost
+      - REACT_NATIVE_PACKAGER_HOSTNAME=host.docker.internal
+      # Bind the web server to all interfaces
+      - WEB_HOST=0.0.0.0
+
+    volumes:
+      # Mount source for live reload
+      - ./UI:/app
+      # Keep container node_modules isolated from the host
+      - /app/node_modules
 
 volumes:
   postgres_data:
