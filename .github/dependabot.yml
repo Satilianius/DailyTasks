@@ -7,7 +7,12 @@ updates:
       interval: "weekly"
       day: "sunday"
     assignees: [@Satilianius]
+    labels: ["backend"]
     open-pull-requests-limit: 10
+    groups:
+      backend:
+        patterns:
+          - "*"
 
   # NPM (frontend in UI folder)
   - package-ecosystem: "npm"
@@ -16,7 +21,12 @@ updates:
       interval: "weekly"
       day: "sunday"
     assignees: [@Satilianius]
+    labels: ["frontend"]
     open-pull-requests-limit: 10
+    groups:
+      frontend:
+        patterns:
+          - "*"
 
   # Dockerfiles and docker-compose (root)
   - package-ecosystem: "docker"
@@ -25,7 +35,12 @@ updates:
       interval: "weekly"
       day: "sunday"
     assignees: [@Satilianius]
+    labels: ["backend", "docker"]
     open-pull-requests-limit: 10
+    groups:
+      docker:
+        patterns:
+          - "*"
 
   # Dockerfiles in UI folder
   - package-ecosystem: "docker"
@@ -34,4 +49,9 @@ updates:
       interval: "weekly"
       day: "sunday"
     assignees: [@Satilianius]
+    labels: ["frontend", "docker"]
     open-pull-requests-limit: 10
+    groups:
+      docker:
+        patterns:
+          - "*"
