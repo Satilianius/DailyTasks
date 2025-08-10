@@ -78,12 +78,14 @@ func setupMiddleware(r *chi.Mux) {
 }
 
 func defineRoutes(r *chi.Mux) {
-	// Example using a placeholder function from internal/api package:
+	// Example using a placeholder function from an internal / api package:
 	// api.RegisterRoutes(r, userHandler) // Pass the router and necessary handlers
 
 	// Placeholder route
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/AllTasks", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+
 		_, err := fmt.Fprintln(w, "Server is running!")
 		if err != nil {
 			log.Printf("Failed to write response: %v", err)

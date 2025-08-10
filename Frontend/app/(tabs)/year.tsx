@@ -1,10 +1,11 @@
+import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
 
-export default function DayScreen() {
+export default function YearScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Day view</Text>
+      <Text style={styles.title}>Year view</Text>
       <Text style={styles.caption}>Coming soon</Text>
     </View>
   );
