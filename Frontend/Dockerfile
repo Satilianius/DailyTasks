@@ -16,9 +16,9 @@ COPY . .
 ENV CHOKIDAR_USEPOLLING=true \
     WATCHPACK_POLLING=true
 
-# Expose Expo ports (web and Metro)
-EXPOSE 19006 8081
+# Expose Expo ports (Metro)
+EXPOSE 8081
 
 # Default command: run Expo web server accessible from outside the container
 # Binding to 0.0.0.0 ensures it's reachable via host port mapping
-CMD ["npm", "run", "web", "--", "--host", "0.0.0.0", "--port", "19006"]
+CMD ["npm", "run", "web", "--", "--host", "0.0.0.0", "--port", "8081"]

@@ -24,7 +24,6 @@ services:
       - ./Frontend:/app
       - /app/node_modules
     ports:
-      - "19006:19006"
       - "8081:8081"
 
   database:
