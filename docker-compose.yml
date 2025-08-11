@@ -1,11 +1,46 @@
 name: DailyTasks
 
 services:
+  database:
+    image: postgres:17
+    container_name: DailyTasksDB
+    environment:
+      POSTGRES_USER: Developer
+      POSTGRES_PASSWORD: Development
+      POSTGRES_DB: DailyTasks
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U Developer -d DailyTasks" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  database-migrate:
+    image: migrate/migrate:4
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - ./Database/migrations:/migrations:ro
+    environment:
+      DATABASE_URL: postgres://Developer:Development@database:5432/DailyTasks?sslmode=disable
+    command:
+      - "-path"
+      - "/migrations"
+      - "-database"
+      - "postgres://Developer:Development@database:5432/DailyTasks?sslmode=disable"
+      - "up"
+    restart: "no"
+
   backend:
     build: .
     container_name: DailyTasksBackend
     depends_on:
-      - database
+      database-migrate:
+        condition: service_completed_successfully
     environment:
       GO_ENV: dev
       DB_HOST: database
@@ -25,18 +60,6 @@ services:
       - /app/node_modules
     ports:
       - "8081:8081"
-
-  database:
-    image: postgres:17
-    container_name: DailyTasksDB
-    environment:
-      POSTGRES_USER: Developer
-      POSTGRES_PASSWORD: Development
-      POSTGRES_DB: DailyTasks
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   postgres_data:

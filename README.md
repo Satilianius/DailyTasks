@@ -15,7 +15,7 @@ In the future, I am planning to add some statistics to the data.
 
 ## Deployment
 
-### Using Docker Compose
+### Using Docker Compose (Development only)
 
 The entire application (backend, database, and frontend) can be started with a single command:
 
@@ -25,15 +25,13 @@ docker-compose up
 
 This will:
 1. Start a PostgreSQL database
-2. Build and start the Go backend server
-3. Build and start the Expo frontend application
+2. Run db migrations if it is the first time running this container 
+3. Build and start the Go backend server
+4. Build and start the Expo frontend application
 
 The services will be available at:
 - Backend API: http://localhost:8080
-- Frontend (Web): http://localhost:19006
-- Expo Metro (native): http://localhost:19000
-- Expo DevTools: http://localhost:19002
-- Metro for Web (assets/HMR): http://localhost:8081
+- Metro for Web: http://localhost:8081
 
 To stop all services:
 

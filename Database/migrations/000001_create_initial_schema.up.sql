@@ -5,7 +5,6 @@ CREATE TYPE task_type AS ENUM (
     'time'
     );
 
--- Create Users table
 CREATE TABLE IF NOT EXISTS users
 (
     user_uuid  UUID PRIMARY KEY         DEFAULT gen_random_uuid(),
@@ -15,7 +14,6 @@ CREATE TABLE IF NOT EXISTS users
     archived   BOOLEAN                  DEFAULT FALSE
 );
 
--- Create tasks table
 CREATE TABLE IF NOT EXISTS tasks
 (
     task_uuid   UUID PRIMARY KEY         DEFAULT gen_random_uuid(),
