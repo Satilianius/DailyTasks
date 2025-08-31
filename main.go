@@ -128,7 +128,7 @@ func waitForSignals(errChan chan error, stopChan chan os.Signal, srv *http.Serve
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// Attempt graceful shutdown
+		// Attempt a graceful shutdown
 		if err := srv.Shutdown(ctx); err != nil {
 			log.Fatalf("Server shutdown failed: %v", err)
 		} else {

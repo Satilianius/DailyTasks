@@ -2,8 +2,9 @@ package Progress
 
 import (
 	"DailyTasks/Tasks"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type PostgresRepository struct{}

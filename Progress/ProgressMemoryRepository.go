@@ -3,9 +3,10 @@ package Progress
 import (
 	"DailyTasks/Tasks"
 	"fmt"
-	"github.com/google/uuid"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type MemoryRepository struct {
