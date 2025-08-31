@@ -4,9 +4,10 @@ import (
 	"DailyTasks/config"
 	"database/sql"
 	"fmt"
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"log"
 	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 // NewConnection Establishes a connection pool to the PostgreSQL database.

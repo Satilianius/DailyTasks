@@ -2,9 +2,10 @@ package Tasks
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"slices"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type MemoryRepository struct {

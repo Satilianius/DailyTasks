@@ -2,11 +2,12 @@ package Progress
 
 import (
 	"DailyTasks/Tasks"
-	"github.com/google/uuid"
 	"reflect"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func TestMemoryRepository_AddTask(t *testing.T) {
