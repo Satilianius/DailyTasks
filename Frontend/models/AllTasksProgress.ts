@@ -7,7 +7,7 @@ export interface UserTasksProgressDto {
 }
 
 export interface DailyTasksProgress {
-    date: string;
+    date: Date;
     tasks: TaskProgress[];
 }
 
