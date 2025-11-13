@@ -3,8 +3,6 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -15,26 +13,26 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const theme = Colors['dark'];
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
-        tabBarStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
-          borderTopColor: colorScheme === 'dark' ? '#1f2937' : '#e6e6eb',
-        },
-        headerStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
-        },
-        headerTitleStyle: {
-          color: Colors[colorScheme ?? 'light'].text,
-        },
-        headerTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+    screenOptions={{
+      tabBarActiveTintColor: theme.tabIconSelected,
+      tabBarInactiveTintColor: theme.tabIconDefault,
+      tabBarStyle: {
+          backgroundColor: theme.tabBarBackground,
+          borderTopColor: theme.borderTop,
+      },
+      headerStyle: {
+          backgroundColor: theme.background,
+      },
+      headerTitleStyle: {
+          color: theme.text,
+      },
+      headerTintColor: theme.tint,
+      headerShown: false,
+    }}>
       <Tabs.Screen
         name="index"
         options={{
