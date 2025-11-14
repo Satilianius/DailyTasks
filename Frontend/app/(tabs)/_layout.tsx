@@ -3,6 +3,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 
 import Colors from '@/constants/Colors';
+import { useColorScheme } from '@/components/useColorScheme';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -13,7 +14,8 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const theme = Colors['dark'];
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'dark'];
 
   return (
     <Tabs
@@ -21,7 +23,7 @@ export default function TabLayout() {
       tabBarActiveTintColor: theme.tabIconSelected,
       tabBarInactiveTintColor: theme.tabIconDefault,
       tabBarStyle: {
-          backgroundColor: theme.tabBarBackground,
+          backgroundColor: theme.componentBackground,
           borderTopColor: theme.borderTop,
       },
       headerStyle: {

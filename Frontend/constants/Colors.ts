@@ -9,7 +9,7 @@ export default {
     borderTop: '#e6e6eb',
     tabIconDefault: '#9aa0a6',
     tabIconSelected: tintColorLight,
-    tabBarBackground: '#ffffff',
+    componentBackground: '#ffffff',
   },
   dark: {
     text: '#f2f2f7',
@@ -18,6 +18,6 @@ export default {
     borderTop: '#1f2937',
     tabIconDefault: '#6b7280',
     tabIconSelected: tintColorDark,
-    tabBarBackground: '#1f2937',
+    componentBackground: '#1f2937',
   },
 };
