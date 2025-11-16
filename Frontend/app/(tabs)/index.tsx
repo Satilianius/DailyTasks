@@ -2,42 +2,41 @@ import {RefreshControl, ScrollView, StyleSheet} from 'react-native';
 import {View} from '@/components/Themed';
 import TaskCard from '@/components/TaskCard';
 import DateNavigator from "@/components/DateNavigator";
-import {useEffect, useMemo, useState} from "react";
-import {DailyTasksProgress, isBooleanTask, TaskProgress, UserTasksProgressDto} from "@/models/AllTasksProgress";
-import {formatDateToISO} from "@/utils/date";
+import {useContext, useEffect, useMemo, useState} from "react";
+import {isBooleanTask, TaskProgress} from "@/models/AllTasksProgress";
+import {TasksProgressContext} from "@/context/TasksProgressContext";
 
 export default function DayScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [cachedData, setCachedData] = useState<UserTasksProgressDto | null>(null);
-    const [loading, setLoading] = useState(true);
+    const {cachedTaskProgress, setCachedTaskProgress, loading, loadRange} = useContext(TasksProgressContext)!;
     const [refreshing, setRefreshing] = useState(false);
 
     // Mock user ID - replace with actual auth user ID
     const userId = 'user-123-abc';
 
     const currentDayTasks = useMemo<TaskProgress[]>(() => {
-        if (!cachedData) return [];
+        if (!cachedTaskProgress) return [];
 
-        const dailyProgress = cachedData.TasksProgress.find(day =>
+        const dailyProgress = cachedTaskProgress.TasksProgress.find(day =>
             isSameDay(day.date, currentDate)
         );
         return dailyProgress?.tasks || [];
-    }, [cachedData, currentDate]);
+    }, [cachedTaskProgress, currentDate]);
 
     const cacheRange = useMemo(() => {
-        if (!cachedData || cachedData.TasksProgress.length === 0) {
+        if (!cachedTaskProgress || cachedTaskProgress.TasksProgress.length === 0) {
             return {start: null, end: null};
         }
 
-        const dates = cachedData.TasksProgress.map(d => d.date);
+        const dates = cachedTaskProgress.TasksProgress.map(d => d.date);
         return {
             start: new Date(Math.min(...dates.map(d => d.getTime()))),
             end: new Date(Math.max(...dates.map(d => d.getTime())))
         };
-    }, [cachedData]);
+    }, [cachedTaskProgress]);
 
     useEffect(() => {
-        if (!cachedData || isCurrentDateNotInCache()) {
+        if (!cachedTaskProgress || isCurrentDateNotInCache()) {
             void loadMonthData();
         }
         function isCurrentDateNotInCache() {
@@ -47,22 +46,14 @@ export default function DayScreen() {
     }, [currentDate]);
 
     const loadMonthData = async () => {
-        setLoading(true);
-        try {
-            // Load 1 month back, 1 week forward (better for historical tracking)
-            const startDate = new Date(currentDate);
-            startDate.setDate(startDate.getDate() - 30);
+        // Load 1 month back, 1 week forward (better for historical tracking)
+        const startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 30);
 
-            const endDate = new Date(currentDate);
-            endDate.setDate(endDate.getDate() + 7);
+        const endDate = new Date(currentDate);
+        endDate.setDate(endDate.getDate() + 7);
 
-            const userProgress = await fetchUserTasksProgress(userId, startDate, endDate);
-            setCachedData(userProgress);
-        } catch (error) {
-            console.error('Failed to load tasks:', error);
-        } finally {
-            setLoading(false);
-        }
+        await loadRange(userId, startDate, endDate);
     };
 
     const handlePreviousDay = () => {
@@ -79,9 +70,9 @@ export default function DayScreen() {
 
     const handleTaskPress = (taskId: string) => {
         const task = currentDayTasks.find(t => t.taskId === taskId);
-        if (!task || !isBooleanTask(task) || !cachedData) return;
+        if (!task || !isBooleanTask(task) || !cachedTaskProgress) return;
 
-        const updatedProgress = cachedData.TasksProgress.map(day =>
+        const updatedProgress = cachedTaskProgress.TasksProgress.map(day =>
             isSameDay(day.date, currentDate)
                 ? {
                     ...day,
@@ -94,7 +85,7 @@ export default function DayScreen() {
                 : day
         );
 
-        setCachedData({...cachedData, TasksProgress: updatedProgress});
+        setCachedTaskProgress({...cachedTaskProgress, TasksProgress: updatedProgress});
 
         // TODO: Send update to backend
         // taskService.updateTask(taskId, { progress: !task.progress });
@@ -126,7 +117,7 @@ export default function DayScreen() {
                     />
                 }
             >
-                {loading && !cachedData ? (
+                {loading && !cachedTaskProgress ? (
                     <View style={styles.taskGrid}>
                         {/* You can add a loading spinner here */}
                     </View>
@@ -145,59 +136,6 @@ export default function DayScreen() {
         </View>
     );
 }
-
-// Mock function to simulate backend call - fetches a month of data
-const fetchUserTasksProgress = async (userId: string, startDate: Date, endDate: Date): Promise<UserTasksProgressDto> => {
-    console.log(`Fetching data from ${formatDateToISO(startDate)} to ${formatDateToISO(endDate)}`);
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Generate mock data for the date range
-    const tasksProgress: DailyTasksProgress[] = [];
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-        const dayOfMonth = currentDate.getDate();
-
-        // Vary the data based on the day for more realistic mock data
-        tasksProgress.push({
-            date: new Date(currentDate),
-            tasks: [
-                {
-                    taskId: 'a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d',
-                    taskName: 'Water Plants',
-                    type: 'boolean' as const,
-                    progress: dayOfMonth % 3 !== 0
-                },
-                {
-                    taskId: 'b2c3d4e5-f6a7-4b5c-9d0e-1f2a3b4c5d6e',
-                    taskName: 'Go to bed',
-                    type: 'time' as const,
-                    progress: '23:30:00.000'
-                },
-                {
-                    taskId: 'c3d4e5f6-a7b8-4c5d-0e1f-2a3b4c5d6e7f',
-                    taskName: 'Push Ups',
-                    type: 'number' as const,
-                    progress: 30 + (dayOfMonth % 20)
-                },
-                {
-                    taskId: 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a',
-                    taskName: 'Meditate',
-                    type: 'duration' as const,
-                    progress: `00:${10 + (dayOfMonth % 30)}:${(dayOfMonth * 13) % 60}.000`
-                },
-            ]
-        });
-
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return {
-        userId: userId,
-        TasksProgress: tasksProgress
-    };
-};
 
 function isSameDay(date1: Date, date2: Date): boolean {
     return date1.getFullYear() === date2.getFullYear() &&
