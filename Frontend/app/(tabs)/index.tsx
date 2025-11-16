@@ -3,12 +3,12 @@ import {View} from '@/components/Themed';
 import TaskCard from '@/components/TaskCard';
 import DateNavigator from "@/components/DateNavigator";
 import {useContext, useEffect, useMemo, useState} from "react";
-import {isBooleanTask, TaskProgress} from "@/models/AllTasksProgress";
+import {TaskProgress} from "@/models/AllTasksProgress";
 import {TasksProgressContext} from "@/context/TasksProgressContext";
 
 export default function DayScreen() {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const {cachedTaskProgress, setCachedTaskProgress, loading, loadRange} = useContext(TasksProgressContext)!;
+    const {cachedTaskProgress, loading, loadRange} = useContext(TasksProgressContext)!;
     const [refreshing, setRefreshing] = useState(false);
 
     // Mock user ID - replace with actual auth user ID
@@ -69,26 +69,7 @@ export default function DayScreen() {
     };
 
     const handleTaskPress = (taskId: string) => {
-        const task = currentDayTasks.find(t => t.taskId === taskId);
-        if (!task || !isBooleanTask(task) || !cachedTaskProgress) return;
-
-        const updatedProgress = cachedTaskProgress.TasksProgress.map(day =>
-            isSameDay(day.date, currentDate)
-                ? {
-                    ...day,
-                    tasks: day.tasks.map(t =>
-                        t.taskId === taskId && isBooleanTask(t)
-                            ? {...t, progress: !t.progress}
-                            : t
-                    )
-                }
-                : day
-        );
-
-        setCachedTaskProgress({...cachedTaskProgress, TasksProgress: updatedProgress});
-
-        // TODO: Send update to backend
-        // taskService.updateTask(taskId, { progress: !task.progress });
+        // TODO: navigate to task details screen in future
     };
 
     const handleManualRefresh = async () => {
@@ -127,6 +108,9 @@ export default function DayScreen() {
                             <TaskCard
                                 key={task.taskId}
                                 task={task}
+                                // TODO check if we can set userId here and not pass it down
+                                userId={userId}
+                                date={currentDate}
                                 onPress={() => handleTaskPress(task.taskId)}
                             />
                         ))}

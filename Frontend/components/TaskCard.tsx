@@ -3,15 +3,21 @@ import {Text, View} from '@/components/Themed';
 import {isBooleanTask, isDurationTask, isNumberTask, isTimeTask, TaskProgress} from "@/models/AllTasksProgress";
 import {useColorScheme} from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import BooleanProgressEditor from '@/components/BooleanProgressEditor';
+import {useContext} from 'react';
+import {TasksProgressContext} from '@/context/TasksProgressContext';
 
 interface TaskCardProps {
   task: TaskProgress;
-  onPress: () => void;
+  date: Date;
+  userId: string;
+  onPress?: () => void; // Reserved for opening task details in the future
 }
 
-export default function TaskCard({task, onPress}: TaskCardProps) {
+export default function TaskCard({task, date, userId, onPress}: TaskCardProps) {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'dark'];
+  const {updateTaskProgress} = useContext(TasksProgressContext)!;
 
   const getProgressDisplay = (): string => {
     if (isBooleanTask(task)) {
@@ -31,17 +37,32 @@ export default function TaskCard({task, onPress}: TaskCardProps) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.componentBackground }, isCompleted && styles.cardCompleted]}>
+      style={[
+        styles.card,
+        isCompleted
+          ? {backgroundColor: theme.success}
+          : {backgroundColor: theme.componentBackground}]}>
 
-      <Text style={[styles.cardTitle, { color: theme.text }]}>
+      <Text style={[styles.cardTitle, {color: theme.text}]}>
         {task.taskName}
       </Text>
 
       <View style={styles.progressContainer}>
-        <Text style={styles.progressValue}>
-          {getProgressDisplay()}
-        </Text>
+        {isBooleanTask(task)
+          ? (
+            <BooleanProgressEditor
+              value={task.progress}
+              onChange={(next) => {
+                // Update via shared context (optimistic cache + mock backend)
+                void updateTaskProgress(userId, date, task.taskId, next);
+              }}
+            />)
+          : (
+            <Text style={styles.progressValue}>
+              {getProgressDisplay()}
+            </Text>)}
       </View>
+
     </Pressable>
   )
 }
@@ -54,9 +75,6 @@ const styles = StyleSheet.create({
     minHeight: 180,
     minWidth: 180,
     justifyContent: 'space-between'
-  },
-  cardCompleted: {
-    backgroundColor: '#4a7c59',
   },
   cardTitle: {
     fontSize: 20,

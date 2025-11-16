@@ -1,12 +1,18 @@
 import React, {createContext, PropsWithChildren, useCallback, useState} from 'react';
 import {DailyTasksProgress, UserTasksProgressDto} from '@/models/AllTasksProgress';
-import {formatDateToISO} from '@/utils/date';
+import {formatDateToISO, isSameDay} from '@/utils/date';
 
 export interface TasksProgressContextValue {
     cachedTaskProgress: UserTasksProgressDto | null;
     setCachedTaskProgress: React.Dispatch<React.SetStateAction<UserTasksProgressDto | null>>;
     loading: boolean;
     loadRange: (userId: string, startDate: Date, endDate: Date) => Promise<void>;
+    updateTaskProgress: (
+        userId: string,
+        date: Date,
+        taskId: string,
+        newProgress: boolean | number | string
+    ) => Promise<void>;
 }
 
 export const TasksProgressContext = createContext<TasksProgressContextValue | undefined>(undefined);
@@ -27,8 +33,46 @@ export function TasksProgressProvider({children}: PropsWithChildren) {
         }
     }, []);
 
+    const updateTaskProgress = useCallback(async (
+        userId: string,
+        date: Date,
+        taskId: string,
+        newProgress: boolean | number | string,
+    ) => {
+        if (!cachedTaskProgress) return;
+
+        // Keep a snapshot for potential rollback
+        const prev = cachedTaskProgress;
+
+        // Optimistically update local cache
+        const updated: UserTasksProgressDto = {
+            ...cachedTaskProgress,
+            TasksProgress: cachedTaskProgress.TasksProgress.map(day =>
+                isSameDay(day.date, date)
+                    ? {
+                        ...day,
+                        tasks: day.tasks.map(t =>
+                            t.taskId === taskId
+                                ? { ...t, progress: newProgress as any }
+                                : t
+                        ),
+                    }
+                    : day
+            ),
+        };
+        setCachedTaskProgress(updated);
+
+        try {
+            await updateTaskProgressApi(userId, date, taskId, newProgress);
+        } catch (e) {
+            console.error('Failed to update task progress:', e);
+            // Rollback on failure
+            setCachedTaskProgress(prev);
+        }
+    }, [cachedTaskProgress]);
+
     return (
-        <TasksProgressContext.Provider value={{cachedTaskProgress, setCachedTaskProgress, loading, loadRange}}>
+        <TasksProgressContext.Provider value={{cachedTaskProgress, setCachedTaskProgress, loading, loadRange, updateTaskProgress}}>
             {children}
         </TasksProgressContext.Provider>
     );
@@ -85,3 +129,15 @@ async function fetchUserTasksProgress(userId: string, startDate: Date, endDate: 
         TasksProgress: tasksProgress,
     };
 }
+
+// Mock function to simulate a backend update call
+async function updateTaskProgressApi(
+    userId: string,
+    date: Date,
+    taskId: string,
+    newProgress: boolean | number | string,
+): Promise<void> {
+    console.log(`Updating task progress for user=${userId}, date=${formatDateToISO(date)}, taskId=${taskId}, newProgress=${JSON.stringify(newProgress)}`);
+    await new Promise(resolve => setTimeout(resolve, 300));
+}
+
