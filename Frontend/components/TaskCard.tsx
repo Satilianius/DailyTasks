@@ -3,7 +3,8 @@ import {Text, View} from '@/components/Themed';
 import {isBooleanTask, isDurationTask, isNumberTask, isTimeTask, TaskProgress} from "@/models/AllTasksProgress";
 import {useColorScheme} from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import BooleanProgressEditor from '@/components/BooleanProgressEditor';
+import BooleanProgressEditor from '@/components/ProgressEditors/BooleanProgressEditor';
+import NumberProgressEditor from '@/components/ProgressEditors/NumberProgressEditor';
 import {useContext} from 'react';
 import {TasksProgressContext} from '@/context/TasksProgressContext';
 
@@ -48,19 +49,24 @@ export default function TaskCard({task, date, userId, onPress}: TaskCardProps) {
       </Text>
 
       <View style={styles.progressContainer}>
-        {isBooleanTask(task)
-          ? (
-            <BooleanProgressEditor
-              value={task.progress}
-              onChange={(next) => {
-                // Update via shared context (optimistic cache + mock backend)
-                void updateTaskProgress(userId, date, task.taskId, next);
-              }}
-            />)
-          : (
-            <Text style={styles.progressValue}>
-              {getProgressDisplay()}
-            </Text>)}
+        {isBooleanTask(task) ? (
+          <BooleanProgressEditor
+            value={task.progress}
+            onChange={(next) => {
+              // Update via shared context (optimistic cache + mock backend)
+              void updateTaskProgress(userId, date, task.taskId, next);
+            }}
+          />
+        ) : isNumberTask(task) ? (
+          <NumberProgressEditor
+            value={task.progress}
+            onChange={(next) => {
+              void updateTaskProgress(userId, date, task.taskId, next);
+            }}
+          />
+        ) : (
+          <Text style={styles.progressValue}>{getProgressDisplay()}</Text>
+        )}
       </View>
 
     </Pressable>
