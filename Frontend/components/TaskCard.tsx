@@ -5,6 +5,7 @@ import {useColorScheme} from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import BooleanProgressEditor from '@/components/ProgressEditors/BooleanProgressEditor';
 import NumberProgressEditor from '@/components/ProgressEditors/NumberProgressEditor';
+import DurationProgressEditor from '@/components/ProgressEditors/DurationProgressEditor';
 import {useContext} from 'react';
 import {TasksProgressContext} from '@/context/TasksProgressContext';
 
@@ -59,6 +60,13 @@ export default function TaskCard({task, date, userId, onPress}: TaskCardProps) {
           />
         ) : isNumberTask(task) ? (
           <NumberProgressEditor
+            value={task.progress}
+            onChange={(next) => {
+              void updateTaskProgress(userId, date, task.taskId, next);
+            }}
+          />
+        ) : isDurationTask(task) ? (
+          <DurationProgressEditor
             value={task.progress}
             onChange={(next) => {
               void updateTaskProgress(userId, date, task.taskId, next);

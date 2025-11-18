@@ -116,7 +116,7 @@ async function fetchUserTasksProgress(userId: string, startDate: Date, endDate: 
                     taskId: 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a',
                     taskName: 'Meditate',
                     type: 'duration' as const,
-                    progress: `00:${10 + (dayOfMonth % 30)}:${(dayOfMonth * 13) % 60}.000`,
+                  progress: `00:${10 + (dayOfMonth % 30)}:${((dayOfMonth * 13) % 60).toString().padStart(2, '0')}.000`,
                 },
             ],
         });
