@@ -1,4 +1,5 @@
-export type TaskType = 'boolean' | 'number' | 'time' | 'duration';
+export const taskTypes = ['boolean', 'number', 'time', 'duration'] as const;
+export type TaskType = typeof taskTypes[number];
 
 // Main DTO
 export interface UserTasksProgressDto {
