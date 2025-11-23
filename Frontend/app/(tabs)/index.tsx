@@ -1,27 +1,167 @@
-import { StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import {RefreshControl, ScrollView, StyleSheet} from 'react-native';
+import {View} from '@/components/Themed';
+import TaskCard from '@/components/TaskCard';
+import DateNavigator from "@/components/DateNavigator";
+import {useContext, useEffect, useMemo, useState} from "react";
+import {TaskProgress} from "@/models/AllTasksProgress";
+import {TasksProgressContext} from "@/context/TasksProgressContext";
 
 export default function DayScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Day view</Text>
-      <Text style={styles.caption}>Coming soon</Text>
-    </View>
-  );
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const {cachedTaskProgress, loading, loadRange} = useContext(TasksProgressContext)!;
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Mock user ID - replace with actual auth user ID
+    const userId = 'user-123-abc';
+
+    const currentDayTasks = useMemo<TaskProgress[]>(() => {
+        if (!cachedTaskProgress) return [];
+
+        const dailyProgress = cachedTaskProgress.TasksProgress.find(day =>
+            isSameDay(day.date, currentDate)
+        );
+        return dailyProgress?.tasks || [];
+    }, [cachedTaskProgress, currentDate]);
+
+    const cacheRange = useMemo(() => {
+        if (!cachedTaskProgress || cachedTaskProgress.TasksProgress.length === 0) {
+            return {start: null, end: null};
+        }
+
+        const dates = cachedTaskProgress.TasksProgress.map(d => d.date);
+        return {
+            start: new Date(Math.min(...dates.map(d => d.getTime()))),
+            end: new Date(Math.max(...dates.map(d => d.getTime())))
+        };
+    }, [cachedTaskProgress]);
+
+    useEffect(() => {
+        if (!cachedTaskProgress || isCurrentDateNotInCache()) {
+            void loadMonthData();
+        }
+        function isCurrentDateNotInCache() {
+            return !cacheRange.start || !cacheRange.end
+                || currentDate < cacheRange.start || currentDate > cacheRange.end;
+        }
+    }, [currentDate]);
+
+    const loadMonthData = async () => {
+        // Load 1 month back, 1 week forward (better for historical tracking)
+        const startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 30);
+
+        const endDate = new Date(currentDate);
+        endDate.setDate(endDate.getDate() + 7);
+
+        await loadRange(userId, startDate, endDate);
+    };
+
+    const handlePreviousDay = () => {
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() - 1);
+        setCurrentDate(newDate);
+    };
+
+    const handleNextDay = () => {
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() + 1);
+        setCurrentDate(newDate);
+    };
+
+    const handleTaskPress = (taskId: string) => {
+        // TODO: navigate to task details screen in future
+    };
+
+    const handleManualRefresh = async () => {
+        setRefreshing(true);
+        await loadMonthData();
+        setRefreshing(false);
+    };
+
+    return (
+        <View style={styles.container}>
+            {/* Date Navigator */}
+            <DateNavigator
+                currentDate={currentDate}
+                onPrevious={handlePreviousDay}
+                onNext={handleNextDay}
+            />
+
+            {/* Task Grid */}
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleManualRefresh}
+                    />
+                }
+            >
+                {loading && !cachedTaskProgress ? (
+                    <View style={styles.taskGrid}>
+                        {/* You can add a loading spinner here */}
+                    </View>
+                ) : (
+                    <View style={styles.taskGrid}>
+                        {currentDayTasks.map((task) => (
+                            <TaskCard
+                                key={task.taskId}
+                                task={task}
+                                // TODO check if we can set userId here and not pass it down
+                                userId={userId}
+                                date={currentDate}
+                                onPress={() => handleTaskPress(task.taskId)}
+                            />
+                        ))}
+                    </View>
+                )}
+            </ScrollView>
+        </View>
+    );
 }
 
+function isSameDay(date1: Date, date2: Date): boolean {
+    return date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate();
+}
+
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  caption: {
-    opacity: 0.7,
-  },
+    container: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    scrollView: {
+        width: '100%',
+    },
+    scrollContent: {
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    taskGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        maxWidth: 1200,
+        width: '100%',
+        paddingHorizontal: 8,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    caption: {
+        opacity: 0.7,
+    },
+    dateNav: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+    },
 });
