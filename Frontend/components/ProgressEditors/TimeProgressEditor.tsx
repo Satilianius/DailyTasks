@@ -1,9 +1,10 @@
 import React, {useMemo, useState} from 'react';
-import {ActivityIndicator, Pressable, StyleSheet, Text, useColorScheme, View} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet, Text, View} from 'react-native';
 import {TimerPickerModal} from 'react-native-timer-picker';
+import {useColorScheme} from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 
-interface DurationProgressEditorProps {
+interface TimeProgressEditorProps {
   // Value comes as HH:mm:ss.mmm
   value: string;
   onChange: (next: string) => void;
@@ -11,15 +12,15 @@ interface DurationProgressEditorProps {
   loading?: boolean;
 }
 
-// Format picked duration to HH:mm:ss.000
-function formatDuration({ hours = 0, minutes = 0, seconds = 0 }: { hours?: number; minutes?: number; seconds?: number; }): string {
+// Format picked time to HH:mm:ss.000
+function formatTime({ hours = 0, minutes = 0, seconds = 0 }: { hours?: number; minutes?: number; seconds?: number; }): string {
   const h = String(hours).padStart(2, '0');
   const m = String(minutes).padStart(2, '0');
   const s = String(seconds).padStart(2, '0');
   return `${h}:${m}:${s}.000`;
 }
 
-export default function DurationProgressEditor({ value, onChange, disabled, loading }: DurationProgressEditorProps) {
+export default function TimeProgressEditor({ value, onChange, disabled, loading }: TimeProgressEditorProps) {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'dark'];
 
@@ -31,9 +32,9 @@ export default function DurationProgressEditor({ value, onChange, disabled, load
   return (
     <View style={styles.container}>
       <Pressable
-        testID="open-duration-picker"
+        testID="open-time-picker"
         accessibilityRole="button"
-        accessibilityLabel="Edit duration"
+        accessibilityLabel="Edit time"
         accessibilityState={{ disabled: !editable, busy: !!loading }}
         disabled={!editable}
         onPress={() => setShowPicker(true)}
@@ -41,7 +42,7 @@ export default function DurationProgressEditor({ value, onChange, disabled, load
           styles.button,
           { borderColor: theme.borderTop, backgroundColor: theme.componentBackground },
           (!editable) && { opacity: 0.7 },
-          pressed && editable && { transform: [{ scale: 0.7 }] },
+          pressed && editable && { transform: [{ scale: 0.98 }] },
         ]}
       >
         <Text style={[styles.buttonText, { color: theme.text }]}>{summary}</Text>
@@ -55,15 +56,15 @@ export default function DurationProgressEditor({ value, onChange, disabled, load
       <TimerPickerModal
         visible={showPicker}
         setIsVisible={setShowPicker}
-        initialValue={value ? { hours: Number(value.substring(0, 2)), minutes: Number(value.substring(3, 5)), seconds: Number(value.substring(6, 8)) } : undefined}
         onConfirm={(picked) => {
-          const formatted = formatDuration(picked ?? {});
+          const formatted = formatTime(picked ?? {});
           onChange(formatted);
           setShowPicker(false);
         }}
         onCancel={() => setShowPicker(false)}
         closeOnOverlayPress
         styles={{ theme: 'light' }}
+        // For time-of-day feel; leaving 24h by default, no AM/PM
       />
     </View>
   );
