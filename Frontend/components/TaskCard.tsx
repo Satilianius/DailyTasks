@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     margin: 8,
-    minHeight: 180,
-    minWidth: 180,
+    minHeight: 150,
+    minWidth: 150,
     justifyContent: 'space-between'
   },
   cardTitle: {
