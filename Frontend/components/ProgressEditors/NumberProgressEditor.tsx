@@ -72,7 +72,7 @@ export default function NumberProgressEditor({ value, onChange, disabled, loadin
           { borderColor: theme.borderTop, color: theme.text, backgroundColor: theme.componentBackground },
           (!editable) && { opacity: 0.7 },
         ]}
-        placeholder="Enter number"
+        placeholder="0"
         placeholderTextColor={theme.text}
       />
       {loading && (

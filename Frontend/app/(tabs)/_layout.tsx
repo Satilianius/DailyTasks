@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     right: 20,
-    bottom: 90, // Adjusted to sit above the tab bar roughly
+    bottom: 120, // Adjusted to sit above the tab bar roughly
     borderRadius: 28,
     elevation: 8,
     shadowColor: '#000',

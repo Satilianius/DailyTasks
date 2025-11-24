@@ -6,6 +6,7 @@ import Colors from "@/constants/Colors";
 import BooleanProgressEditor from '@/components/ProgressEditors/BooleanProgressEditor';
 import NumberProgressEditor from '@/components/ProgressEditors/NumberProgressEditor';
 import DurationProgressEditor from '@/components/ProgressEditors/DurationProgressEditor';
+import TimeProgressEditor from '@/components/ProgressEditors/TimeProgressEditor';
 import {useContext} from 'react';
 import {TasksProgressContext} from '@/context/TasksProgressContext';
 
@@ -27,7 +28,7 @@ export default function TaskCard({task, date, userId, onPress}: TaskCardProps) {
     } else if (isNumberTask(task)) {
       return `${task.progress}`;
     } else if (isTimeTask(task)) {
-      return task.progress.substring(0, 5); // HH:mm
+      return task.progress.substring(0, 8); // HH:mm:ss (updated)
     } else if (isDurationTask(task)) {
       return task.progress.substring(0, 8); // HH:mm:ss
     }
@@ -50,7 +51,7 @@ export default function TaskCard({task, date, userId, onPress}: TaskCardProps) {
       </Text>
 
       <View style={styles.progressContainer}>
-        {isBooleanTask(task) ? (
+        {isBooleanTask(task) ? ( // TODO replace with switch?
           <BooleanProgressEditor
             value={task.progress}
             onChange={(next) => {
@@ -72,6 +73,13 @@ export default function TaskCard({task, date, userId, onPress}: TaskCardProps) {
               void updateTaskProgress(userId, date, task.taskId, next);
             }}
           />
+        ) : isTimeTask(task) ? (
+          <TimeProgressEditor
+            value={task.progress}
+            onChange={(next) => {
+              void updateTaskProgress(userId, date, task.taskId, next);
+            }}
+          />
         ) : (
           <Text style={styles.progressValue}>{getProgressDisplay()}</Text>
         )}
@@ -86,8 +94,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     margin: 8,
-    minHeight: 180,
-    minWidth: 180,
+    minHeight: 150,
+    minWidth: 150,
     justifyContent: 'space-between'
   },
   cardTitle: {
