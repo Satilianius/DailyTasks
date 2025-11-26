@@ -6,7 +6,7 @@ import {KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, Touc
 import Colors from '@/constants/Colors';
 import {useColorScheme} from '@/components/useColorScheme';
 import {TasksProgressContext, TasksProgressProvider} from '@/context/TasksProgressContext';
-import {TaskProgress, TaskType, taskTypes} from "@/models/AllTasksProgress";
+import {TaskProgress, TaskType} from "@/models/AllTasksProgress";
 
 export default function TabLayout() {
   return (
@@ -24,7 +24,7 @@ function TabsLayoutContent() {
   // New Task Modal State
   const [modalVisible, setModalVisible] = useState(false);
   const [newTaskName, setNewTaskName] = useState('');
-  const [newTaskType, setNewTaskType] = useState<TaskType>('boolean');
+  const [newTaskType, setNewTaskType] = useState<TaskType>(TaskType.Boolean);
 
   // Mock user ID
   const userId = 'user-123-abc';
@@ -39,45 +39,45 @@ function TabsLayoutContent() {
 
     // Determine default progress based on type
     const defaultProgressByType: Record<TaskType, boolean | number | string> = {
-      boolean: false,
-      number: 0,
-      time: '00:00:00.000',
-      duration: '00:00:00.000',
+      [TaskType.Boolean]: false,
+      [TaskType.Number]: 0,
+      [TaskType.Time]: '00:00:00.000',
+      [TaskType.Duration]: '00:00:00.000',
     };
 
     let newTask: TaskProgress;
     switch (newTaskType) {
-      case 'boolean':
+      case TaskType.Boolean:
         newTask = {
           taskId: newId,
           taskName: trimmedTaskName,
-          type: 'boolean',
-          progress: defaultProgressByType['boolean'] as boolean,
+          type: TaskType.Boolean,
+          progress: defaultProgressByType[TaskType.Boolean] as boolean,
         };
         break;
-      case 'number':
+      case TaskType.Number:
         newTask = {
           taskId: newId,
           taskName: trimmedTaskName,
-          type: 'number',
-          progress: defaultProgressByType['number'] as number,
+          type: TaskType.Number,
+          progress: defaultProgressByType[TaskType.Number] as number,
         };
         break;
-      case 'time':
+      case TaskType.Time:
         newTask = {
           taskId: newId,
           taskName: trimmedTaskName,
-          type: 'time',
-          progress: defaultProgressByType['time'] as string,
+          type: TaskType.Time,
+          progress: defaultProgressByType[TaskType.Time] as string,
         };
         break;
-      case 'duration':
+      case TaskType.Duration:
       default:
         newTask = {
           taskId: newId,
           taskName: trimmedTaskName,
-          type: 'duration',
-          progress: defaultProgressByType['duration'] as string,
+          type: TaskType.Duration,
+          progress: defaultProgressByType[TaskType.Duration] as string,
         };
         break;
     }
@@ -86,7 +86,7 @@ function TabsLayoutContent() {
       // TODO what if this is the first task?
       // If nothing is cached yet, just close the modal. Views will populate on next load.
       setNewTaskName('');
-      setNewTaskType('boolean');
+      setNewTaskType(TaskType.Boolean);
       setModalVisible(false);
       return;
     }
@@ -122,7 +122,7 @@ function TabsLayoutContent() {
 
     // Reset modal state
     setNewTaskName('');
-    setNewTaskType('boolean');
+    setNewTaskType(TaskType.Boolean);
     setModalVisible(false);
   };
 
@@ -213,7 +213,7 @@ function TabsLayoutContent() {
 
             <Text style={[styles.label, {color: theme.tabIconDefault}]}>Task Type</Text>
             <View style={styles.typeContainer}>
-              {taskTypes.map((type) => (
+              {Object.values(TaskType).map((type) => (
                 <TouchableOpacity
                   key={type}
                   style={[
